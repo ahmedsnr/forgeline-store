@@ -1,0 +1,371 @@
+/* ==========================================================================
+   FORGELINE — Core Site Logic
+   يشتغل على كل صفحات الموقع (غير لوحة التحكم)
+   ========================================================================== */
+
+(function () {
+  "use strict";
+
+  /* ----------------------------------------------------------------------
+     STATE
+     ---------------------------------------------------------------------- */
+  let lang = Store.getLang();
+  let cart = Store.getCart();
+
+  /* ----------------------------------------------------------------------
+     I18N STRINGS (UI chrome shared across pages)
+     ---------------------------------------------------------------------- */
+  const UI = {
+    ar: {
+      search_ph: "ابحث عن منتج أو ماركة...",
+      add_to_cart: "أضف للسلة",
+      out_of_stock: "غير متوفر",
+      low_stock: "كمية محدودة",
+      in_stock_left: "متبقي",
+      quick_view: "عرض سريع",
+      cart_empty_title: "سلتك فارغة حالياً",
+      cart_empty_sub: "أضف منتجات لتبدأ طلبك",
+      cart_subtotal: "المجموع الفرعي",
+      checkout: "إتمام الطلب",
+      offer_ends: "ينتهي في",
+      bestsellers_short: "★",
+      new_short: "جديد",
+    },
+    fr: {
+      search_ph: "Rechercher un produit ou une marque...",
+      add_to_cart: "Ajouter au panier",
+      out_of_stock: "Rupture de stock",
+      low_stock: "Stock limité",
+      in_stock_left: "restant(s)",
+      quick_view: "Aperçu rapide",
+      cart_empty_title: "Votre panier est vide",
+      cart_empty_sub: "Ajoutez des produits pour commencer",
+      cart_subtotal: "Sous-total",
+      checkout: "Passer la commande",
+      offer_ends: "Se termine le",
+      bestsellers_short: "★",
+      new_short: "Nouveau",
+    },
+  };
+  function t(key) { return UI[lang][key] || key; }
+  function fmt(n) { return Number(n || 0).toLocaleString("en-US"); }
+
+  /* ----------------------------------------------------------------------
+     LANGUAGE
+     ---------------------------------------------------------------------- */
+  function applyLang() {
+    document.documentElement.lang = lang;
+    document.documentElement.dir = lang === "ar" ? "rtl" : "ltr";
+    const switchBtn = document.getElementById("langSwitch");
+    if (switchBtn) {
+      const label = switchBtn.querySelector("svg") ? switchBtn : switchBtn;
+      switchBtn.lastChild && (switchBtn.lastChild.textContent = " " + (lang === "ar" ? "FR" : "AR"));
+    }
+    document.querySelectorAll("[data-search-input]").forEach((el) => (el.placeholder = t("search_ph")));
+    const headerSearch = document.getElementById("headerSearch");
+    if (headerSearch) headerSearch.placeholder = t("search_ph");
+  }
+
+  function toggleLang() {
+    lang = lang === "ar" ? "fr" : "ar";
+    Store.setLang(lang);
+    applyLang();
+    renderAll();
+  }
+
+  /* ----------------------------------------------------------------------
+     CART LOGIC
+     ---------------------------------------------------------------------- */
+  function addToCart(productId, qty) {
+    qty = qty || 1;
+    const existing = cart.find((c) => c.id === productId);
+    if (existing) existing.qty += qty;
+    else cart.push({ id: productId, qty: qty });
+    Store.saveCart(cart);
+    renderCartDrawer();
+    openCartDrawer();
+  }
+
+  function updateCartQty(productId, qty) {
+    if (qty <= 0) {
+      cart = cart.filter((c) => c.id !== productId);
+    } else {
+      const item = cart.find((c) => c.id === productId);
+      if (item) item.qty = qty;
+    }
+    Store.saveCart(cart);
+    renderCartDrawer();
+  }
+
+  function removeFromCart(productId) {
+    cart = cart.filter((c) => c.id !== productId);
+    Store.saveCart(cart);
+    renderCartDrawer();
+  }
+
+  function getCartItems() {
+    const products = Store.getProducts();
+    return cart
+      .map((c) => ({ ...c, product: products.find((p) => p.id === c.id) }))
+      .filter((c) => c.product);
+  }
+
+  function getCartCount() {
+    return cart.reduce((s, c) => s + c.qty, 0);
+  }
+
+  function getCartSubtotal() {
+    return getCartItems().reduce((s, c) => s + c.qty * c.product.price, 0);
+  }
+
+  /* ----------------------------------------------------------------------
+     CART DRAWER UI
+     ---------------------------------------------------------------------- */
+  function renderCartDrawer() {
+    const badge = document.getElementById("cartBadge");
+    const body = document.getElementById("drawerBody");
+    const foot = document.getElementById("drawerFoot");
+    const subtotalEl = document.getElementById("drawerSubtotal");
+    if (!body) return;
+
+    const count = getCartCount();
+    if (badge) {
+      badge.textContent = count;
+      badge.style.display = count > 0 ? "flex" : "none";
+    }
+
+    const items = getCartItems();
+
+    if (items.length === 0) {
+      body.innerHTML = `
+        <div class="drawer-empty">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+          <strong>${t("cart_empty_title")}</strong>
+          <span class="text-faint">${t("cart_empty_sub")}</span>
+        </div>`;
+      if (foot) foot.style.display = "none";
+      return;
+    }
+
+    body.innerHTML = items
+      .map(
+        (item) => `
+      <div class="cart-line" data-id="${item.id}">
+        <img src="${item.product.img}" alt="">
+        <div class="cart-line-info">
+          <div class="cart-line-name">${lang === "ar" ? item.product.name_ar : item.product.name_fr}</div>
+          <div class="cart-line-price">${fmt(item.product.price)} ${CURRENCY}</div>
+          <div class="cart-line-controls">
+            <button class="qty-btn" data-action="dec" data-id="${item.id}">−</button>
+            <span class="qty-value">${item.qty}</span>
+            <button class="qty-btn" data-action="inc" data-id="${item.id}">+</button>
+            <button class="cart-line-remove" data-action="remove" data-id="${item.id}" aria-label="إزالة">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+            </button>
+          </div>
+        </div>
+        <div class="cart-line-total">${fmt(item.product.price * item.qty)} ${CURRENCY}</div>
+      </div>`
+      )
+      .join("");
+
+    if (foot) {
+      foot.style.display = "block";
+      if (subtotalEl) subtotalEl.textContent = `${fmt(getCartSubtotal())} ${CURRENCY}`;
+    }
+
+    body.querySelectorAll("[data-action]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const id = btn.getAttribute("data-id");
+        const action = btn.getAttribute("data-action");
+        const current = cart.find((c) => c.id === id);
+        if (action === "inc") updateCartQty(id, (current ? current.qty : 0) + 1);
+        else if (action === "dec") updateCartQty(id, (current ? current.qty : 0) - 1);
+        else if (action === "remove") removeFromCart(id);
+      });
+    });
+  }
+
+  function openCartDrawer() {
+    document.getElementById("cartDrawer")?.classList.add("open");
+    document.getElementById("drawerOverlay")?.classList.add("open");
+    document.body.style.overflow = "hidden";
+  }
+  function closeCartDrawer() {
+    document.getElementById("cartDrawer")?.classList.remove("open");
+    document.getElementById("drawerOverlay")?.classList.remove("open");
+    document.body.style.overflow = "";
+  }
+
+  /* ----------------------------------------------------------------------
+     PRODUCT CARD RENDERING
+     ---------------------------------------------------------------------- */
+  function getActiveOffers() {
+    const now = new Date();
+    return Store.getOffers().filter((o) => new Date(o.start) <= now && now <= new Date(o.end));
+  }
+
+  function offerForProduct(productId, activeOffers) {
+    return activeOffers.find((o) => o.productId === productId);
+  }
+
+  function productCardHTML(p, activeOffers) {
+    const name = lang === "ar" ? p.name_ar : p.name_fr;
+    const oos = p.stock <= 0;
+    const lowStock = !oos && p.stock <= (p.lowStockAt || 5);
+    const offer = offerForProduct(p.id, activeOffers);
+    const effectivePrice = offer ? Math.round(p.price * (1 - offer.discount / 100)) : p.price;
+
+    let tags = "";
+    if (offer) tags += `<span class="tag tag-sale">-${offer.discount}%</span>`;
+    else if (p.best) tags += `<span class="tag tag-best">${t("bestsellers_short")}</span>`;
+    if (p.isNew) tags += `<span class="tag tag-new">${t("new_short")}</span>`;
+
+    return `
+    <div class="product-card" data-product-id="${p.id}">
+      <div class="product-media">
+        <div class="product-tags">${tags}</div>
+        <img src="${p.img}" alt="${name}" loading="lazy">
+        ${oos ? `<div class="product-oos"><span>${t("out_of_stock")}</span></div>` : ""}
+        <button class="product-quick" data-action="quickview" data-id="${p.id}">${t("quick_view")}</button>
+      </div>
+      <div class="product-body">
+        <div class="product-brand">${p.brand}</div>
+        <div class="product-name">${name}</div>
+        <div class="product-price-row">
+          <span class="product-price">${fmt(effectivePrice)} <small>${CURRENCY}</small></span>
+          ${offer || p.oldPrice ? `<span class="product-price-old">${fmt(p.oldPrice || p.price)}</span>` : ""}
+        </div>
+        ${lowStock ? `<div class="product-stock-low">${t("low_stock")} · ${p.stock} ${t("in_stock_left")}</div>` : ""}
+        <button class="product-add" data-action="add" data-id="${p.id}" ${oos ? "disabled" : ""}>
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          ${t("add_to_cart")}
+        </button>
+      </div>
+    </div>`;
+  }
+
+  function bindProductCardEvents(container) {
+    container.querySelectorAll('[data-action="add"]').forEach((btn) => {
+      btn.addEventListener("click", () => addToCart(btn.getAttribute("data-id"), 1));
+    });
+    container.querySelectorAll('[data-action="quickview"]').forEach((btn) => {
+      btn.addEventListener("click", () => {
+        window.location.href = "product.html?id=" + btn.getAttribute("data-id");
+      });
+    });
+    container.querySelectorAll(".product-name, .product-media img").forEach((el) => {
+      el.style.cursor = "pointer";
+      el.addEventListener("click", (e) => {
+        const card = el.closest(".product-card");
+        if (card) window.location.href = "product.html?id=" + card.getAttribute("data-product-id");
+      });
+    });
+  }
+
+  function renderGrid(containerId, products) {
+    const el = document.getElementById(containerId);
+    if (!el) return;
+    const activeOffers = getActiveOffers();
+    if (products.length === 0) {
+      el.innerHTML = `<p class="text-faint" style="grid-column:1/-1;text-align:center;padding:40px 0;">—</p>`;
+      return;
+    }
+    el.innerHTML = products.map((p) => productCardHTML(p, activeOffers)).join("");
+    bindProductCardEvents(el);
+  }
+
+  /* ----------------------------------------------------------------------
+     OFFERS BANNER (homepage)
+     ---------------------------------------------------------------------- */
+  function renderOffersBanner() {
+    const el = document.getElementById("offersGrid");
+    if (!el) return;
+    const products = Store.getProducts();
+    const activeOffers = getActiveOffers();
+    if (activeOffers.length === 0) {
+      el.closest("section").style.display = "none";
+      return;
+    }
+    el.innerHTML = activeOffers
+      .map((o) => {
+        const prod = products.find((p) => p.id === o.productId);
+        if (!prod) return "";
+        return `
+        <div class="offer-card">
+          <img src="${o.img || prod.img}" alt="">
+          <div class="offer-content">
+            <span class="offer-discount">-${o.discount}%</span>
+            <h3>${lang === "ar" ? o.title_ar : o.title_fr}</h3>
+            <p>${lang === "ar" ? prod.name_ar : prod.name_fr}</p>
+            <div class="offer-end">${t("offer_ends")} ${new Date(o.end).toLocaleDateString()}</div>
+          </div>
+        </div>`;
+      })
+      .join("");
+  }
+
+  /* ----------------------------------------------------------------------
+     HOMEPAGE SECTIONS
+     ---------------------------------------------------------------------- */
+  function renderHomepage() {
+    const products = Store.getProducts();
+    const bestsellers = products.filter((p) => p.best).slice(0, 4);
+    const newest = [...products]
+      .filter((p) => p.isNew)
+      .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+      .slice(0, 4);
+    renderGrid("bestsellersGrid", bestsellers);
+    renderGrid("newArrivalsGrid", newest);
+    renderOffersBanner();
+  }
+
+  /* ----------------------------------------------------------------------
+     GLOBAL EVENT WIRING
+     ---------------------------------------------------------------------- */
+  function wireGlobalUI() {
+    document.getElementById("cartTrigger")?.addEventListener("click", openCartDrawer);
+    document.getElementById("closeDrawer")?.addEventListener("click", closeCartDrawer);
+    document.getElementById("drawerOverlay")?.addEventListener("click", closeCartDrawer);
+    document.getElementById("langSwitch")?.addEventListener("click", toggleLang);
+
+    document.getElementById("mobileMenuToggle")?.addEventListener("click", () => {
+      document.getElementById("mobileNav")?.classList.toggle("open");
+    });
+
+    // header search -> redirect to shop with query
+    const headerSearch = document.getElementById("headerSearch");
+    if (headerSearch) {
+      headerSearch.addEventListener("keydown", (e) => {
+        if (e.key === "Enter" && headerSearch.value.trim()) {
+          window.location.href = "shop.html?q=" + encodeURIComponent(headerSearch.value.trim());
+        }
+      });
+    }
+  }
+
+  function renderAll() {
+    renderCartDrawer();
+    if (document.getElementById("bestsellersGrid")) renderHomepage();
+  }
+
+  /* ----------------------------------------------------------------------
+     INIT
+     ---------------------------------------------------------------------- */
+  document.addEventListener("DOMContentLoaded", () => {
+    applyLang();
+    wireGlobalUI();
+    renderAll();
+  });
+
+  // expose a few things other page-specific scripts (shop.js, product.js, checkout.js) need
+  window.ForgeLine = {
+    get lang() { return lang; },
+    t, fmt,
+    addToCart, updateCartQty, removeFromCart,
+    getCartItems, getCartCount, getCartSubtotal,
+    getActiveOffers, offerForProduct,
+    productCardHTML, bindProductCardEvents, renderGrid,
+    openCartDrawer, closeCartDrawer, renderCartDrawer,
+  };
+})();
