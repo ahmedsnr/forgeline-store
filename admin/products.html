@@ -141,13 +141,18 @@
       </div>
 
       <div class="field">
-        <label>رابط الصورة الرئيسية <span class="req">*</span></label>
-        <input type="text" id="fImage" placeholder="https://...">
+        <label>الصورة الرئيسية <span class="req">*</span></label>
+        <input type="file" id="fImageFile" accept="image/*">
+        <p class="text-faint" style="font-size:11.5px; margin-top:6px;">اختر صورة من جهازك (موبايل أو كمبيوتر). الصيغ المدعومة: JPG, PNG, WEBP</p>
+        <div id="mainImagePreview" style="width:90px; height:90px; border-radius:10px; overflow:hidden; background:var(--navy-50); margin-top:10px; border:1px solid var(--silver-200);"></div>
+        <input type="hidden" id="fImageCurrentUrl">
       </div>
 
       <div class="field">
-        <label>صور إضافية (روابط مفصولة بفاصلة , — اختياري)</label>
-        <input type="text" id="fExtraImages" placeholder="https://...jpg, https://...jpg">
+        <label>صور إضافية (اختياري — يمكن اختيار أكثر من صورة)</label>
+        <input type="file" id="fExtraImageFiles" accept="image/*" multiple>
+        <div id="extraImagesPreview" style="display:flex; gap:8px; flex-wrap:wrap; margin-top:10px;"></div>
+        <input type="hidden" id="fExtraImagesCurrentUrls">
       </div>
 
       <div class="field-row">
@@ -186,6 +191,11 @@
 
 </main>
 
+<!-- Firebase SDK (نسخة compat — تعمل مباشرة بدون أدوات بناء) -->
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-storage-compat.js"></script>
+<script src="../js/firebase-config.js"></script>
 <script src="../js/data.js"></script>
 <script src="../js/admin.js"></script>
 <script src="../js/admin-products.js"></script>
