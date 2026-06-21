@@ -236,55 +236,179 @@ const DELIVERY_PRICES = {
 const DEFAULT_DELIVERY_PRICE = { home: 700, office: 550 }; // يُستخدم فقط إذا لم توجد ولاية بالجدول أعلاه
 
 /* ============================================================
-   LOCAL DATA STORE
-   يقرأ من localStorage إذا كانت بيانات لوحة التحكم محفوظة هناك،
-   وإلا يستخدم البيانات الافتراضية أعلاه.
+   DATA STORE — Firebase Firestore
+   المنتجات والعروض والطلبات تتخزن في Firestore (مشتركة بين كل
+   الأجهزة فوراً). السلة ولغة الواجهة تفضل محلية لكل جهاز/متصفح
+   لأنها بيانات شخصية مش محتاجة مزامنة.
+
+   ⚠️ كل دوال المنتجات/العروض/الطلبات بقت async — لازم تستخدم
+   await أو .then() معاها في أي مكان بتتنادى فيه.
    ============================================================ */
 const Store = {
-  KEYS: {
-    products: "forgeline_products",
-    offers: "forgeline_offers",
-    orders: "forgeline_orders",
+  COLLECTIONS: {
+    products: "products",
+    offers: "offers",
+    orders: "orders",
+  },
+  LOCAL_KEYS: {
     cart: "forgeline_cart",
     lang: "forgeline_lang",
   },
 
-  getProducts() {
-    const raw = localStorage.getItem(this.KEYS.products);
-    return raw ? JSON.parse(raw) : PRODUCTS;
-  },
-  saveProducts(list) {
-    localStorage.setItem(this.KEYS.products, JSON.stringify(list));
+  _seeded: false,
+
+  /* تتأكد إن فيه بيانات أولية في Firestore أول مرة (مرة واحدة بس) */
+  async _ensureSeeded() {
+    if (this._seeded) return;
+    this._seeded = true;
+    try {
+      const snapshot = await db.collection(this.COLLECTIONS.products).limit(1).get();
+      if (snapshot.empty) {
+        const batch = db.batch();
+        PRODUCTS.forEach((p) => {
+          const ref = db.collection(this.COLLECTIONS.products).doc(p.id);
+          batch.set(ref, p);
+        });
+        OFFERS.forEach((o) => {
+          const ref = db.collection(this.COLLECTIONS.offers).doc(o.id);
+          batch.set(ref, o);
+        });
+        await batch.commit();
+      }
+    } catch (e) {
+      console.error("Firestore seeding failed:", e);
+    }
   },
 
-  getOffers() {
-    const raw = localStorage.getItem(this.KEYS.offers);
-    return raw ? JSON.parse(raw) : OFFERS;
+  /* ---------------- PRODUCTS ---------------- */
+  async getProducts() {
+    await this._ensureSeeded();
+    try {
+      const snapshot = await db.collection(this.COLLECTIONS.products).get();
+      if (snapshot.empty) return PRODUCTS;
+      return snapshot.docs.map((doc) => doc.data());
+    } catch (e) {
+      console.error("getProducts failed:", e);
+      return PRODUCTS;
+    }
   },
-  saveOffers(list) {
-    localStorage.setItem(this.KEYS.offers, JSON.stringify(list));
+  async saveProducts(list) {
+    try {
+      const batch = db.batch();
+      list.forEach((p) => {
+        const ref = db.collection(this.COLLECTIONS.products).doc(p.id);
+        batch.set(ref, p);
+      });
+      await batch.commit();
+    } catch (e) {
+      console.error("saveProducts failed:", e);
+    }
+  },
+  async saveProduct(p) {
+    try {
+      await db.collection(this.COLLECTIONS.products).doc(p.id).set(p);
+    } catch (e) {
+      console.error("saveProduct failed:", e);
+    }
+  },
+  async deleteProduct(id) {
+    try {
+      await db.collection(this.COLLECTIONS.products).doc(id).delete();
+    } catch (e) {
+      console.error("deleteProduct failed:", e);
+    }
   },
 
-  getOrders() {
-    const raw = localStorage.getItem(this.KEYS.orders);
-    return raw ? JSON.parse(raw) : [];
+  /* ---------------- OFFERS ---------------- */
+  async getOffers() {
+    await this._ensureSeeded();
+    try {
+      const snapshot = await db.collection(this.COLLECTIONS.offers).get();
+      return snapshot.docs.map((doc) => doc.data());
+    } catch (e) {
+      console.error("getOffers failed:", e);
+      return OFFERS;
+    }
   },
-  saveOrders(list) {
-    localStorage.setItem(this.KEYS.orders, JSON.stringify(list));
+  async saveOffers(list) {
+    try {
+      const batch = db.batch();
+      list.forEach((o) => {
+        const ref = db.collection(this.COLLECTIONS.offers).doc(o.id);
+        batch.set(ref, o);
+      });
+      await batch.commit();
+    } catch (e) {
+      console.error("saveOffers failed:", e);
+    }
+  },
+  async saveOffer(o) {
+    try {
+      await db.collection(this.COLLECTIONS.offers).doc(o.id).set(o);
+    } catch (e) {
+      console.error("saveOffer failed:", e);
+    }
+  },
+  async deleteOffer(id) {
+    try {
+      await db.collection(this.COLLECTIONS.offers).doc(id).delete();
+    } catch (e) {
+      console.error("deleteOffer failed:", e);
+    }
   },
 
+  /* ---------------- ORDERS ---------------- */
+  async getOrders() {
+    try {
+      const snapshot = await db.collection(this.COLLECTIONS.orders).orderBy("date", "desc").get();
+      return snapshot.docs.map((doc) => doc.data());
+    } catch (e) {
+      console.error("getOrders failed:", e);
+      return [];
+    }
+  },
+  async saveOrders(list) {
+    try {
+      const batch = db.batch();
+      list.forEach((o) => {
+        const ref = db.collection(this.COLLECTIONS.orders).doc(o.id);
+        batch.set(ref, o);
+      });
+      await batch.commit();
+    } catch (e) {
+      console.error("saveOrders failed:", e);
+    }
+  },
+  async addOrder(order) {
+    try {
+      await db.collection(this.COLLECTIONS.orders).doc(order.id).set(order);
+    } catch (e) {
+      console.error("addOrder failed:", e);
+      throw e;
+    }
+  },
+  async updateOrderStatus(orderId, status) {
+    try {
+      await db.collection(this.COLLECTIONS.orders).doc(orderId).update({ status });
+    } catch (e) {
+      console.error("updateOrderStatus failed:", e);
+    }
+  },
+
+  /* ---------------- CART (محلي لكل جهاز) ---------------- */
   getCart() {
-    const raw = localStorage.getItem(this.KEYS.cart);
+    const raw = localStorage.getItem(this.LOCAL_KEYS.cart);
     return raw ? JSON.parse(raw) : [];
   },
   saveCart(cart) {
-    localStorage.setItem(this.KEYS.cart, JSON.stringify(cart));
+    localStorage.setItem(this.LOCAL_KEYS.cart, JSON.stringify(cart));
   },
 
+  /* ---------------- LANGUAGE (محلي لكل جهاز) ---------------- */
   getLang() {
-    return localStorage.getItem(this.KEYS.lang) || "ar";
+    return localStorage.getItem(this.LOCAL_KEYS.lang) || "ar";
   },
   setLang(lang) {
-    localStorage.setItem(this.KEYS.lang, lang);
+    localStorage.setItem(this.LOCAL_KEYS.lang, lang);
   },
 };
