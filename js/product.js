@@ -8,7 +8,7 @@
   let qty = 1;
   let currentProduct = null;
 
-  document.addEventListener("DOMContentLoaded", init);
+  document.addEventListener("forgeline:ready", init);
 
   function getQueryParam(name) {
     const params = new URLSearchParams(window.location.search);
@@ -17,7 +17,7 @@
 
   function init() {
     const id = getQueryParam("id");
-    const products = Store.getProducts();
+    const products = window.ForgeLine.products;
     currentProduct = products.find((p) => p.id === id);
 
     if (!currentProduct) {
@@ -32,12 +32,12 @@
     renderRelated(currentProduct, products);
   }
 
-  function lang() { return window.ForgeLine ? window.ForgeLine.lang : (Store.getLang() || "ar"); }
+  function lang() { return window.ForgeLine.lang; }
   function fmt(n) { return Number(n || 0).toLocaleString("en-US"); }
 
   function getActiveOffer(productId) {
     const now = new Date();
-    const offers = Store.getOffers().filter((o) => new Date(o.start) <= now && now <= new Date(o.end));
+    const offers = window.ForgeLine.offers.filter((o) => new Date(o.start) <= now && now <= new Date(o.end));
     return offers.find((o) => o.productId === productId);
   }
 
