@@ -10,7 +10,7 @@
   let deliveryType = "home";
   let selectedWilaya = "";
 
-  document.addEventListener("DOMContentLoaded", init);
+  document.addEventListener("forgeline:ready", init);
 
   function fmt(n) { return Number(n || 0).toLocaleString("en-US"); }
 
@@ -178,7 +178,7 @@
     const form = document.getElementById("checkoutForm");
     if (!form) return;
 
-    form.addEventListener("submit", (e) => {
+    form.addEventListener("submit", async (e) => {
       e.preventDefault();
       const { valid, data } = validateForm();
       if (!valid) {
@@ -186,11 +186,24 @@
         if (firstError) firstError.scrollIntoView({ behavior: "smooth", block: "center" });
         return;
       }
-      placeOrder(data);
+
+      const submitBtn = document.getElementById("submitOrderBtn");
+      const originalText = submitBtn.textContent;
+      submitBtn.disabled = true;
+      submitBtn.textContent = "جاري إرسال الطلب...";
+
+      try {
+        await placeOrder(data);
+      } catch (err) {
+        console.error("placeOrder failed:", err);
+        alert("حدث خطأ أثناء إرسال الطلب. تأكد من اتصالك بالإنترنت وحاول مرة أخرى.");
+        submitBtn.disabled = false;
+        submitBtn.textContent = originalText;
+      }
     });
   }
 
-  function placeOrder(customerData) {
+  async function placeOrder(customerData) {
     const items = window.ForgeLine.getCartItems();
     const { subtotal, deliveryFee, total } = calcTotals();
 
@@ -203,20 +216,27 @@
       status: "new",
     };
 
-    // decrement stock
-    const products = Store.getProducts();
-    const updatedProducts = products.map((p) => {
-      const cartItem = items.find((c) => c.id === p.id);
-      return cartItem ? { ...p, stock: Math.max(0, p.stock - cartItem.qty) } : p;
+    // إنقاص المخزون بأمان باستخدام Firestore transaction — يضمن عدم
+    // تعارض البيانات لو أكثر من زبون اشترى نفس المنتج بنفس اللحظة.
+    await db.runTransaction(async (transaction) => {
+      const productRefs = items.map((c) => db.collection("products").doc(c.id));
+      const productSnaps = await Promise.all(productRefs.map((ref) => transaction.get(ref)));
+
+      productSnaps.forEach((snap, i) => {
+        if (!snap.exists) return;
+        const currentStock = snap.data().stock || 0;
+        const newStock = Math.max(0, currentStock - items[i].qty);
+        transaction.update(productRefs[i], { stock: newStock });
+      });
+
+      const orderRef = db.collection("orders").doc(order.id);
+      transaction.set(orderRef, order);
     });
-    Store.saveProducts(updatedProducts);
 
-    // save order
-    const orders = Store.getOrders();
-    orders.unshift(order);
-    Store.saveOrders(orders);
+    // تحديث الكاش المحلي للمنتجات عشان المخزون يبان صحيح فوراً
+    await window.ForgeLine.refreshDataCache();
 
-    // clear cart
+    // إفراغ السلة
     Store.saveCart([]);
 
     showSuccess(order);
