@@ -17,4 +17,5 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 
 const db = firebase.firestore();
-const storage = firebase.storage();
+// ملاحظة: رفع الصور بيتم عبر Cloudinary (انظر js/cloudinary-config.js)
+// وليس Firebase Storage، لأن Storage يتطلب خطة Blaze المدفوعة.
