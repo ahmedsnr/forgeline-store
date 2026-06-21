@@ -6,9 +6,9 @@
   "use strict";
 
   const FREE_DELIVERY_THRESHOLD = 8000;
-  const DELIVERY_FEE = 600;
 
   let deliveryType = "home";
+  let selectedWilaya = "";
 
   document.addEventListener("DOMContentLoaded", init);
 
@@ -26,6 +26,7 @@
     populateWilayas();
     renderSummary();
     setupDeliveryToggle();
+    setupWilayaChange();
     setupFormSubmit();
   }
 
@@ -43,6 +44,21 @@
     });
   }
 
+  function setupWilayaChange() {
+    const select = document.getElementById("custWilaya");
+    if (!select) return;
+    select.addEventListener("change", () => {
+      selectedWilaya = select.value;
+      renderSummary();
+    });
+  }
+
+  function getDeliveryPriceForWilaya(wilaya, type) {
+    if (!wilaya) return null; // لسه محددش ولاية
+    const entry = DELIVERY_PRICES.hasOwnProperty(wilaya) ? DELIVERY_PRICES[wilaya] : DEFAULT_DELIVERY_PRICE;
+    return type === "office" ? entry.office : entry.home;
+  }
+
   /* ----------------------------------------------------------------------
      DELIVERY TYPE TOGGLE
      ---------------------------------------------------------------------- */
@@ -55,11 +71,13 @@
       deliveryType = "home";
       homeBtn.classList.add("selected");
       officeBtn.classList.remove("selected");
+      renderSummary();
     });
     officeBtn.addEventListener("click", () => {
       deliveryType = "office";
       officeBtn.classList.add("selected");
       homeBtn.classList.remove("selected");
+      renderSummary();
     });
   }
 
@@ -68,8 +86,18 @@
      ---------------------------------------------------------------------- */
   function calcTotals() {
     const subtotal = window.ForgeLine.getCartSubtotal();
-    const deliveryFee = subtotal === 0 || subtotal >= FREE_DELIVERY_THRESHOLD ? 0 : DELIVERY_FEE;
-    const total = subtotal + deliveryFee;
+    const wilayaPrice = getDeliveryPriceForWilaya(selectedWilaya, deliveryType);
+    let deliveryFee;
+    if (subtotal === 0) {
+      deliveryFee = 0;
+    } else if (wilayaPrice === null) {
+      deliveryFee = null; // لسه محتاج يختار ولاية
+    } else if (subtotal >= FREE_DELIVERY_THRESHOLD) {
+      deliveryFee = 0;
+    } else {
+      deliveryFee = wilayaPrice;
+    }
+    const total = subtotal + (deliveryFee || 0);
     return { subtotal, deliveryFee, total };
   }
 
@@ -92,7 +120,14 @@
 
     const { subtotal, deliveryFee, total } = calcTotals();
     document.getElementById("summarySubtotal").textContent = fmt(subtotal) + " " + CURRENCY;
-    document.getElementById("summaryDelivery").textContent = deliveryFee === 0 ? "مجاني" : fmt(deliveryFee) + " " + CURRENCY;
+    const deliveryEl = document.getElementById("summaryDelivery");
+    if (deliveryFee === null) {
+      deliveryEl.textContent = "اختر الولاية أولاً";
+    } else if (deliveryFee === 0) {
+      deliveryEl.textContent = "مجاني";
+    } else {
+      deliveryEl.textContent = fmt(deliveryFee) + " " + CURRENCY;
+    }
     document.getElementById("summaryTotal").textContent = fmt(total) + " " + CURRENCY;
   }
 
