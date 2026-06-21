@@ -12,6 +12,19 @@
   let lang = Store.getLang();
   let cart = Store.getCart();
 
+  /* كاش محلي للمنتجات والعروض — يتحمّل مرة واحدة من Firestore عند فتح
+     الصفحة، وبعدها كل دوال العرض (sync) بتقرأ منه مباشرة بدون انتظار.
+     بعد أي عملية تضيف/تعدّل بيانات (نادراً ما تحصل من صفحات الزبون)
+     لازم ننادي refreshDataCache() عشان الكاش يتحدث. */
+  let productsCache = [];
+  let offersCache = [];
+
+  async function refreshDataCache() {
+    const [products, offers] = await Promise.all([Store.getProducts(), Store.getOffers()]);
+    productsCache = products;
+    offersCache = offers;
+  }
+
   /* ----------------------------------------------------------------------
      I18N STRINGS (UI chrome shared across pages)
      ---------------------------------------------------------------------- */
@@ -104,9 +117,8 @@
   }
 
   function getCartItems() {
-    const products = Store.getProducts();
     return cart
-      .map((c) => ({ ...c, product: products.find((p) => p.id === c.id) }))
+      .map((c) => ({ ...c, product: productsCache.find((p) => p.id === c.id) }))
       .filter((c) => c.product);
   }
 
@@ -202,7 +214,7 @@
      ---------------------------------------------------------------------- */
   function getActiveOffers() {
     const now = new Date();
-    return Store.getOffers().filter((o) => new Date(o.start) <= now && now <= new Date(o.end));
+    return offersCache.filter((o) => new Date(o.start) <= now && now <= new Date(o.end));
   }
 
   function offerForProduct(productId, activeOffers) {
@@ -281,7 +293,7 @@
   function renderOffersBanner() {
     const el = document.getElementById("offersGrid");
     if (!el) return;
-    const products = Store.getProducts();
+    const products = productsCache;
     const activeOffers = getActiveOffers();
     if (activeOffers.length === 0) {
       el.closest("section").style.display = "none";
@@ -309,7 +321,7 @@
      HOMEPAGE SECTIONS
      ---------------------------------------------------------------------- */
   function renderHomepage() {
-    const products = Store.getProducts();
+    const products = productsCache;
     const bestsellers = products.filter((p) => p.best).slice(0, 4);
     const newest = [...products]
       .filter((p) => p.isNew)
@@ -352,15 +364,21 @@
   /* ----------------------------------------------------------------------
      INIT
      ---------------------------------------------------------------------- */
-  document.addEventListener("DOMContentLoaded", () => {
+  document.addEventListener("DOMContentLoaded", async () => {
     applyLang();
     wireGlobalUI();
+    await refreshDataCache();
     renderAll();
+    // إشارة لباقي السكريبتات (shop.js, product.js, checkout.js) إن البيانات بقت جاهزة
+    document.dispatchEvent(new CustomEvent("forgeline:ready"));
   });
 
   // expose a few things other page-specific scripts (shop.js, product.js, checkout.js) need
   window.ForgeLine = {
     get lang() { return lang; },
+    get products() { return productsCache; },
+    get offers() { return offersCache; },
+    refreshDataCache,
     t, fmt,
     addToCart, updateCartQty, removeFromCart,
     getCartItems, getCartCount, getCartSubtotal,
