@@ -6,8 +6,8 @@
 (function () {
   "use strict";
 
-  // ننتظر main.js يخلص التهيئة الأساسية (DOMContentLoaded) قبل ما نشتغل
-  document.addEventListener("DOMContentLoaded", init);
+  // ننتظر main.js يخلص تحميل البيانات من Firestore قبل ما نشتغل
+  document.addEventListener("forgeline:ready", init);
 
   let state = {
     cat: "all",
@@ -27,7 +27,7 @@
   }
 
   function init() {
-    const products = Store.getProducts();
+    const products = window.ForgeLine.products;
     const maxProductPrice = Math.max(...products.map((p) => p.price), 1000);
 
     // read URL params (?cat=, ?q=)
@@ -187,7 +187,7 @@
      APPLY FILTERS + RENDER
      ---------------------------------------------------------------------- */
   function applyFilters() {
-    let list = Store.getProducts();
+    let list = window.ForgeLine.products;
 
     if (state.cat !== "all") list = list.filter((p) => p.cat === state.cat);
     if (state.brands.size > 0) list = list.filter((p) => state.brands.has(p.brand));
