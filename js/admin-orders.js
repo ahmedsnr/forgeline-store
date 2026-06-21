@@ -16,15 +16,34 @@
   };
 
   let currentFilter = "all";
+  let allOrdersCache = [];
+  let unsubscribeOrders = null;
 
   document.addEventListener("DOMContentLoaded", () => {
     AdminAuth.requireLogin();
     setupAdminLogout();
     setupStatusFilter();
-    render();
+    listenToOrders();
   });
 
   function fmt(n) { return Number(n || 0).toLocaleString("en-US"); }
+
+  /* ----------------------------------------------------------------------
+     REAL-TIME ORDERS LISTENER
+     أي طلب جديد (من أي جهاز) أو تغيير حالة (من جهاز تاني) بيظهر هنا
+     فوراً بدون الحاجة لإعادة تحميل الصفحة.
+     ---------------------------------------------------------------------- */
+  function listenToOrders() {
+    unsubscribeOrders = db.collection("orders").orderBy("date", "desc").onSnapshot(
+      (snapshot) => {
+        allOrdersCache = snapshot.docs.map((doc) => doc.data());
+        render();
+      },
+      (error) => {
+        console.error("listenToOrders failed:", error);
+      }
+    );
+  }
 
   /* ----------------------------------------------------------------------
      STATUS FILTER PILLS
@@ -62,8 +81,7 @@
      RENDER ORDERS LIST
      ---------------------------------------------------------------------- */
   function render() {
-    const allOrders = Store.getOrders();
-    const orders = currentFilter === "all" ? allOrders : allOrders.filter((o) => o.status === currentFilter);
+    const orders = currentFilter === "all" ? allOrdersCache : allOrdersCache.filter((o) => o.status === currentFilter);
 
     const container = document.getElementById("ordersList");
     const emptyNote = document.getElementById("ordersEmptyNote");
@@ -149,10 +167,13 @@
     });
   }
 
-  function updateOrderStatus(orderId, newStatus) {
-    const orders = Store.getOrders();
-    const updated = orders.map((o) => (o.id === orderId ? { ...o, status: newStatus } : o));
-    Store.saveOrders(updated);
-    render();
+  async function updateOrderStatus(orderId, newStatus) {
+    try {
+      await Store.updateOrderStatus(orderId, newStatus);
+      // مفيش داعي لنداء render() هنا — الـ onSnapshot listener هيلتقط
+      // التغيير تلقائياً ويحدّث الواجهة لوحده فوراً.
+    } catch (e) {
+      alert("تعذّر تحديث حالة الطلب. تأكد من اتصالك بالإنترنت.");
+    }
   }
 })();
