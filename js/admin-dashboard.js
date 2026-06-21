@@ -5,15 +5,14 @@
 (function () {
   "use strict";
 
-  document.addEventListener("DOMContentLoaded", () => {
+  document.addEventListener("DOMContentLoaded", async () => {
     AdminAuth.requireLogin();
     setupAdminLogout();
-    render();
+    await render();
   });
 
-  function render() {
-    const orders = Store.getOrders();
-    const products = Store.getProducts();
+  async function render() {
+    const [orders, products] = await Promise.all([Store.getOrders(), Store.getProducts()]);
 
     renderStatusCounts(orders);
     renderMonthSales(orders);
