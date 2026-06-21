@@ -198,12 +198,24 @@
     });
   }
 
-  /* يرفع ملف صورة واحد لـ Firebase Storage ويرجع رابطه النهائي */
+  /* يرفع ملف صورة واحد لـ Cloudinary ويرجع رابطه النهائي */
   async function uploadImageToStorage(file, pathPrefix) {
-    const safeName = Date.now() + "_" + file.name.replace(/[^a-zA-Z0-9.\-_]/g, "");
-    const ref = storage.ref().child(`${pathPrefix}/${safeName}`);
-    const snapshot = await ref.put(file);
-    return await snapshot.ref.getDownloadURL();
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("upload_preset", CLOUDINARY_UPLOAD_PRESET);
+    formData.append("folder", pathPrefix);
+
+    const response = await fetch(
+      `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`,
+      { method: "POST", body: formData }
+    );
+
+    if (!response.ok) {
+      throw new Error("فشل رفع الصورة إلى Cloudinary");
+    }
+
+    const data = await response.json();
+    return data.secure_url;
   }
 
   /* ----------------------------------------------------------------------
