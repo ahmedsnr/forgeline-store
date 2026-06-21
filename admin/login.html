@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>دخول المالك | فورجلاين</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="stylesheet" href="../css/style.css">
+<style>
+  body {
+    min-height: 100vh;
+    background: var(--navy-950);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+  }
+  .login-card {
+    background: var(--white);
+    border-radius: var(--radius-lg);
+    padding: 38px 32px;
+    width: 100%;
+    max-width: 380px;
+  }
+  .login-brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-family: var(--font-ar);
+    font-weight: 900;
+    font-size: 20px;
+    color: var(--navy-950);
+    margin-bottom: 4px;
+  }
+  .login-brand svg { color: var(--gold); }
+  .login-sub {
+    font-size: 13px;
+    color: var(--ink-faint);
+    margin-bottom: 28px;
+  }
+  .login-icon-badge {
+    width: 44px; height: 44px;
+    background: var(--navy-50);
+    border-radius: var(--radius-full);
+    display: flex; align-items: center; justify-content: center;
+    color: var(--navy-900);
+    margin-bottom: 18px;
+  }
+  .login-error {
+    background: #FDECEC;
+    color: var(--danger);
+    font-size: 13px;
+    font-weight: 700;
+    padding: 11px 14px;
+    border-radius: var(--radius-sm);
+    margin-bottom: 16px;
+    display: none;
+  }
+  .back-link {
+    display: block;
+    text-align: center;
+    font-size: 12.5px;
+    color: var(--ink-faint);
+    font-weight: 700;
+    margin-top: 20px;
+    transition: color var(--duration) var(--ease);
+  }
+  .back-link:hover { color: var(--navy-900); }
+</style>
+</head>
+<body>
+
+<div class="login-card">
+  <div class="login-icon-badge">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+  </div>
+  <div class="login-brand">
+    <svg width="22" height="22" viewBox="0 0 40 40" fill="none"><path d="M6 32V8h6.5l8 14 8-14H35v24h-6V18l-6.5 11h-1L15 18v14H6z" fill="currentColor"/></svg>
+    لوحة تحكم المالك
+  </div>
+  <p class="login-sub">فورجلاين — هذه الصفحة مخصصة لصاحب المتجر فقط</p>
+
+  <div class="login-error" id="loginError">كلمة المرور غير صحيحة</div>
+
+  <form id="loginForm">
+    <div class="field">
+      <label>كلمة المرور</label>
+      <input type="password" id="passwordInput" autocomplete="current-password" autofocus>
+    </div>
+    <button type="submit" class="btn btn-primary btn-block">دخول</button>
+  </form>
+
+  <a href="../index.html" class="back-link">العودة للموقع</a>
+</div>
+
+<script src="../js/data.js"></script>
+<script src="../js/admin.js"></script>
+</body>
+</html>
