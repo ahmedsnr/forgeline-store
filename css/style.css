@@ -787,28 +787,33 @@ html[lang="ar"] .product-price { font-family: var(--font-ar); }
 .drawer {
   position: fixed;
   top: 0; bottom: 0;
-  /* نستخدم right/left بدل inset-inline-end عشان نتجنب مشاكل RTL على موبايل */
   right: 0;
+  left: auto;
   width: 100%;
   max-width: 440px;
   background: var(--white);
   z-index: 201;
   display: flex;
   flex-direction: column;
-  /* نستخدم right بدل transform عشان نتجنب مشاكل RTL على iOS */
   transform: translateX(100%);
   transition: transform var(--duration) var(--ease);
   box-shadow: -20px 0 60px rgba(0,0,0,0.15);
-  /* يمنع الـ drawer من اختفاء خلف الـ keyboard على الموبايل */
   max-height: 100%;
   max-height: 100dvh;
 }
-/* RTL: السلة بتيجي من الشمال */
+/* RTL (عربي): السلة من الشمال */
 html[dir="rtl"] .drawer {
   right: auto;
   left: 0;
   transform: translateX(-100%);
   box-shadow: 20px 0 60px rgba(0,0,0,0.15);
+}
+/* LTR (فرنسي): السلة من اليمين */
+html[dir="ltr"] .drawer {
+  right: 0;
+  left: auto;
+  transform: translateX(100%);
+  box-shadow: -20px 0 60px rgba(0,0,0,0.15);
 }
 .drawer.open { transform: translateX(0); }
 
