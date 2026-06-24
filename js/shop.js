@@ -186,6 +186,17 @@
   /* ----------------------------------------------------------------------
      APPLY FILTERS + RENDER
      ---------------------------------------------------------------------- */
+
+  /* تطبيع النص: يشيل الـ accents ويحول لحروف صغيرة عشان البحث يشتغل
+     مثلاً: "Créatine" → "creatine"، "BCAA" → "bcaa" */
+  function normalizeText(str) {
+    if (!str) return "";
+    return str
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, ""); // يشيل كل الـ diacritics
+  }
+
   function applyFilters() {
     let list = window.ForgeLine.products;
 
@@ -194,15 +205,19 @@
     list = list.filter((p) => p.price <= state.maxPrice);
 
     const headerSearch = document.getElementById("headerSearch");
-    const liveQuery = headerSearch ? headerSearch.value.trim() : state.query;
+    const liveQuery = (headerSearch ? headerSearch.value.trim() : state.query);
     if (liveQuery) {
-      const q = liveQuery.toLowerCase();
-      list = list.filter(
-        (p) =>
-          p.name_ar.toLowerCase().includes(q) ||
-          p.name_fr.toLowerCase().includes(q) ||
-          p.brand.toLowerCase().includes(q)
-      );
+      const q = normalizeText(liveQuery);
+      list = list.filter((p) => {
+        return (
+          normalizeText(p.name_ar).includes(q) ||
+          normalizeText(p.name_fr).includes(q) ||
+          normalizeText(p.brand).includes(q) ||
+          normalizeText(p.desc_ar).includes(q) ||
+          normalizeText(p.desc_fr).includes(q) ||
+          normalizeText(p.cat).includes(q)
+        );
+      });
     }
 
     list = [...list];
@@ -214,13 +229,86 @@
 
     const countEl = document.getElementById("resultsCount");
     if (countEl) countEl.textContent = `(${list.length} منتج)`;
+
+    // اقتراحات البحث
+    renderSearchSuggestions(liveQuery, list);
   }
+
+  /* ----------------------------------------------------------------------
+     SEARCH SUGGESTIONS
+     ---------------------------------------------------------------------- */
+  function renderSearchSuggestions(query, results) {
+    // نضيف قائمة اقتراحات تحت خانة البحث في الهيدر
+    let suggestBox = document.getElementById("searchSuggestions");
+    if (!suggestBox) {
+      const searchInput = document.getElementById("headerSearch");
+      if (!searchInput) return;
+      suggestBox = document.createElement("div");
+      suggestBox.id = "searchSuggestions";
+      suggestBox.style.cssText = `
+        position:absolute; top:100%; right:0; left:0;
+        background:#fff; border:1px solid var(--silver-200);
+        border-radius:var(--radius-md); box-shadow:0 8px 24px rgba(0,0,0,0.12);
+        z-index:300; max-height:280px; overflow-y:auto;
+        margin-top:4px; display:none;
+      `;
+      const wrapper = searchInput.closest("div");
+      if (wrapper) {
+        wrapper.style.position = "relative";
+        wrapper.appendChild(suggestBox);
+      }
+    }
+
+    if (!query || results.length === 0) {
+      suggestBox.style.display = "none";
+      return;
+    }
+
+    const topResults = results.slice(0, 6);
+    const lang = window.ForgeLine.lang;
+    suggestBox.innerHTML = topResults.map((p) => `
+      <div data-suggest-id="${p.id}" style="
+        display:flex; align-items:center; gap:10px;
+        padding:10px 14px; cursor:pointer;
+        border-bottom:1px solid var(--silver-100);
+        transition:background 0.15s;
+      " onmouseover="this.style.background='var(--navy-50)'"
+         onmouseout="this.style.background=''"
+      >
+        <img src="${p.img}" alt="" style="width:36px;height:36px;object-fit:cover;border-radius:6px;background:var(--navy-50);">
+        <div>
+          <div style="font-size:13px;font-weight:700;">${lang === "ar" ? p.name_ar : p.name_fr}</div>
+          <div style="font-size:11px;color:var(--ink-faint);">${p.brand}</div>
+        </div>
+        <div style="margin-inline-start:auto;font-size:13px;font-weight:800;">${Number(p.price).toLocaleString()} ${CURRENCY}</div>
+      </div>
+    `).join("");
+
+    suggestBox.querySelectorAll("[data-suggest-id]").forEach((el) => {
+      el.addEventListener("click", () => {
+        window.location.href = `product.html?id=${el.getAttribute("data-suggest-id")}`;
+      });
+    });
+
+    suggestBox.style.display = "block";
+  }
+
+  // إغلاق الاقتراحات لما المستخدم يضغط خارجها
+  document.addEventListener("click", (e) => {
+    const box = document.getElementById("searchSuggestions");
+    if (box && !box.contains(e.target) && e.target.id !== "headerSearch") {
+      box.style.display = "none";
+    }
+  });
 
   // re-apply filters live as user types in header search
   document.addEventListener("DOMContentLoaded", () => {
     const headerSearch = document.getElementById("headerSearch");
     if (headerSearch) {
       headerSearch.addEventListener("input", () => applyFilters());
+      headerSearch.addEventListener("focus", () => {
+        if (headerSearch.value.trim()) applyFilters();
+      });
     }
   });
 })();
