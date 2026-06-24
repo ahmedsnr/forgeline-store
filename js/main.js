@@ -199,14 +199,20 @@
   }
 
   function openCartDrawer() {
-    document.getElementById("cartDrawer")?.classList.add("open");
+    const drawer = document.getElementById("cartDrawer");
+    if (!drawer) return;
+    // نحدد اتجاه السلة حسب اللغة الحالية
+    if (lang === "ar") {
+      drawer.classList.add("drawer-rtl");
+    } else {
+      drawer.classList.remove("drawer-rtl");
+    }
+    drawer.classList.add("open");
     document.getElementById("drawerOverlay")?.classList.add("open");
-    document.body.style.overflow = "hidden";
   }
   function closeCartDrawer() {
     document.getElementById("cartDrawer")?.classList.remove("open");
     document.getElementById("drawerOverlay")?.classList.remove("open");
-    document.body.style.overflow = "";
   }
 
   /* ----------------------------------------------------------------------
