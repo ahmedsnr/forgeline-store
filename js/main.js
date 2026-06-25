@@ -447,24 +447,29 @@
       document.getElementById("mobileNav")?.classList.toggle("open");
     });
 
-    const headerSearch = document.getElementById("headerSearch");
-    if (headerSearch) {
-      // input + compositionend لضمان الاستجابة على كيبورد الموبايل
-      const onSearchInput = () => {
-        showSuggestions(headerSearch, headerSearch.value.trim());
-      };
-      headerSearch.addEventListener("input", onSearchInput);
-      headerSearch.addEventListener("compositionend", onSearchInput);
-      headerSearch.addEventListener("keyup", onSearchInput);
+    // ربط خانات البحث (ديسكتوب + موبايل)
+    const searchInputs = [
+      document.getElementById("headerSearch"),
+      document.getElementById("mobileSearch"),
+    ].filter(Boolean);
 
-      headerSearch.addEventListener("keydown", (e) => {
-        if (e.key === "Enter" && headerSearch.value.trim()) {
+    searchInputs.forEach((inp) => {
+      const onInput = () => showSuggestions(inp, inp.value.trim());
+      inp.addEventListener("input", onInput);
+      inp.addEventListener("compositionend", onInput);
+      inp.addEventListener("keyup", onInput);
+
+      inp.addEventListener("keydown", (e) => {
+        if (e.key === "Enter" && inp.value.trim()) {
           hideSuggestions();
-          window.location.href = "shop.html?q=" + encodeURIComponent(headerSearch.value.trim());
+          window.location.href = "shop.html?q=" + encodeURIComponent(inp.value.trim());
         }
         if (e.key === "Escape") hideSuggestions();
       });
-    }
+
+      // موبايل: Enter على كيبورد الموبايل (Go/Search button)
+      inp.setAttribute("enterkeyhint", "search");
+    });
 
     // إغلاق الاقتراحات — نستخدم touchstart مع click للموبايل
     document.addEventListener("click", (e) => {
