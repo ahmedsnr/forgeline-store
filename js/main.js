@@ -339,6 +339,91 @@
   }
 
   /* ----------------------------------------------------------------------
+     SEARCH SUGGESTIONS (تعمل في كل الصفحات)
+     ---------------------------------------------------------------------- */
+  function normalizeText(str) {
+    if (!str) return "";
+    return str.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+  }
+
+  function buildSuggestBox(inputEl) {
+    let box = document.getElementById("headerSuggestBox");
+    if (box) return box;
+    box = document.createElement("div");
+    box.id = "headerSuggestBox";
+    box.style.cssText = [
+      "position:absolute", "top:calc(100% + 6px)", "inset-inline-start:0",
+      "width:320px", "max-width:90vw",
+      "background:#fff", "border:1px solid #DDE1E7",
+      "border-radius:12px", "box-shadow:0 8px 28px rgba(0,0,0,0.14)",
+      "z-index:500", "overflow:hidden", "display:none",
+    ].join(";");
+    const wrapper = inputEl.closest("div") || inputEl.parentNode;
+    if (wrapper) {
+      wrapper.style.position = "relative";
+      wrapper.appendChild(box);
+    }
+    return box;
+  }
+
+  function showSuggestions(inputEl, query) {
+    const box = buildSuggestBox(inputEl);
+    if (!query) { box.style.display = "none"; return; }
+
+    const q = normalizeText(query);
+    const results = productsCache.filter((p) =>
+      normalizeText(p.name_ar).includes(q) ||
+      normalizeText(p.name_fr).includes(q) ||
+      normalizeText(p.brand).includes(q) ||
+      normalizeText(p.cat).includes(q)
+    ).slice(0, 7);
+
+    if (results.length === 0) { box.style.display = "none"; return; }
+
+    const isAr = lang === "ar";
+    box.innerHTML = results.map((p) => `
+      <div data-sid="${p.id}" style="
+        display:flex;align-items:center;gap:10px;
+        padding:10px 14px;cursor:pointer;
+        border-bottom:1px solid #EEF0F3;
+      ">
+        <img src="${p.img}" alt="" style="width:38px;height:38px;object-fit:cover;border-radius:7px;background:#F4F7FB;flex-shrink:0;">
+        <div style="flex:1;min-width:0;">
+          <div style="font-size:13.5px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
+            ${isAr ? p.name_ar : p.name_fr}
+          </div>
+          <div style="font-size:11.5px;color:#8995A6;">${p.brand}</div>
+        </div>
+        <div style="font-size:13px;font-weight:800;white-space:nowrap;color:#0A1F3D;">
+          ${fmt(p.price)} <span style="font-size:10px;font-weight:700;color:#8995A6;">${CURRENCY}</span>
+        </div>
+      </div>`).join("") +
+      `<div data-search-all style="
+        padding:11px 14px;text-align:center;
+        font-size:13px;font-weight:700;color:#1E5BFF;
+        cursor:pointer;background:#F4F7FB;
+      ">عرض كل النتائج</div>`;
+
+    box.querySelectorAll("[data-sid]").forEach((el) => {
+      el.addEventListener("mouseenter", () => el.style.background = "#F4F7FB");
+      el.addEventListener("mouseleave", () => el.style.background = "");
+      el.addEventListener("click", () => {
+        window.location.href = "product.html?id=" + el.getAttribute("data-sid");
+      });
+    });
+    box.querySelector("[data-search-all]")?.addEventListener("click", () => {
+      window.location.href = "shop.html?q=" + encodeURIComponent(query);
+    });
+
+    box.style.display = "block";
+  }
+
+  function hideSuggestions() {
+    const box = document.getElementById("headerSuggestBox");
+    if (box) box.style.display = "none";
+  }
+
+  /* ----------------------------------------------------------------------
      GLOBAL EVENT WIRING
      ---------------------------------------------------------------------- */
   function wireGlobalUI() {
@@ -351,15 +436,28 @@
       document.getElementById("mobileNav")?.classList.toggle("open");
     });
 
-    // header search -> redirect to shop with query
     const headerSearch = document.getElementById("headerSearch");
     if (headerSearch) {
+      // اقتراحات فورية من أول حرف
+      headerSearch.addEventListener("input", () => {
+        showSuggestions(headerSearch, headerSearch.value.trim());
+      });
+      // Enter → انتقل لصفحة المتجر بنتائج البحث
       headerSearch.addEventListener("keydown", (e) => {
         if (e.key === "Enter" && headerSearch.value.trim()) {
+          hideSuggestions();
           window.location.href = "shop.html?q=" + encodeURIComponent(headerSearch.value.trim());
         }
+        if (e.key === "Escape") hideSuggestions();
       });
     }
+
+    // إغلاق الاقتراحات لما المستخدم يضغط خارجها
+    document.addEventListener("click", (e) => {
+      if (!e.target.closest("#headerSuggestBox") && e.target.id !== "headerSearch") {
+        hideSuggestions();
+      }
+    });
   }
 
   function renderAll() {
