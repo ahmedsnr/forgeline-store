@@ -407,13 +407,24 @@
     box.querySelectorAll("[data-sid]").forEach((el) => {
       el.addEventListener("mouseenter", () => el.style.background = "#F4F7FB");
       el.addEventListener("mouseleave", () => el.style.background = "");
-      el.addEventListener("click", () => {
+
+      const goToProduct = (e) => {
+        e.preventDefault();
         window.location.href = "product.html?id=" + el.getAttribute("data-sid");
-      });
+      };
+      el.addEventListener("click", goToProduct);
+      el.addEventListener("touchend", goToProduct, { passive: false });
     });
-    box.querySelector("[data-search-all]")?.addEventListener("click", () => {
-      window.location.href = "shop.html?q=" + encodeURIComponent(query);
-    });
+
+    const allBtn = box.querySelector("[data-search-all]");
+    if (allBtn) {
+      const goToAll = (e) => {
+        e.preventDefault();
+        window.location.href = "shop.html?q=" + encodeURIComponent(query);
+      };
+      allBtn.addEventListener("click", goToAll);
+      allBtn.addEventListener("touchend", goToAll, { passive: false });
+    }
 
     box.style.display = "block";
   }
@@ -438,11 +449,14 @@
 
     const headerSearch = document.getElementById("headerSearch");
     if (headerSearch) {
-      // اقتراحات فورية من أول حرف
-      headerSearch.addEventListener("input", () => {
+      // input + compositionend لضمان الاستجابة على كيبورد الموبايل
+      const onSearchInput = () => {
         showSuggestions(headerSearch, headerSearch.value.trim());
-      });
-      // Enter → انتقل لصفحة المتجر بنتائج البحث
+      };
+      headerSearch.addEventListener("input", onSearchInput);
+      headerSearch.addEventListener("compositionend", onSearchInput);
+      headerSearch.addEventListener("keyup", onSearchInput);
+
       headerSearch.addEventListener("keydown", (e) => {
         if (e.key === "Enter" && headerSearch.value.trim()) {
           hideSuggestions();
@@ -452,12 +466,17 @@
       });
     }
 
-    // إغلاق الاقتراحات لما المستخدم يضغط خارجها
+    // إغلاق الاقتراحات — نستخدم touchstart مع click للموبايل
     document.addEventListener("click", (e) => {
       if (!e.target.closest("#headerSuggestBox") && e.target.id !== "headerSearch") {
         hideSuggestions();
       }
     });
+    document.addEventListener("touchstart", (e) => {
+      if (!e.target.closest("#headerSuggestBox") && e.target.id !== "headerSearch") {
+        hideSuggestions();
+      }
+    }, { passive: true });
   }
 
   function renderAll() {
