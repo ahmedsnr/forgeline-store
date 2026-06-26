@@ -32,10 +32,10 @@
     </a>
 
     <nav class="main-nav">
-      <a href="index.html">الرئيسية</a>
-      <a href="shop.html">المتجر</a>
-      <a href="shop.html#offers">العروض</a>
-      <a href="index.html#contact">اتصل بنا</a>
+      <a href="index.html" data-i18n="nav.home">الرئيسية</a>
+      <a href="shop.html" data-i18n="nav.shop">المتجر</a>
+      <a href="shop.html#offers" data-i18n="nav.offers">العروض</a>
+      <a href="index.html#contact" data-i18n="nav.contact">اتصل بنا</a>
     </nav>
 
     <div class="header-actions">
@@ -65,9 +65,9 @@
        ============================================================ -->
   <div id="emptyCartState" class="empty-cart-block" style="display:none;">
     <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
-    <h2 style="margin-bottom:10px;">سلتك فارغة حالياً</h2>
+    <h2 style="margin-bottom:10px;" data-i18n="cart.empty.title" data-i18n="empty.cart.title">سلتك فارغة حالياً</h2>
     <p class="text-faint" style="margin-bottom:26px;">أضف منتجات من المتجر قبل إتمام الطلب</p>
-    <a href="shop.html" class="btn btn-primary">تصفح المتجر</a>
+    <a href="shop.html" class="btn btn-primary" data-i18n="empty.cart.btn">تصفح المتجر</a>
   </div>
 
   <!-- ============================================================
@@ -80,13 +80,13 @@
     </a>
 
     <div class="section-head" style="margin-top:8px;">
-      <div><h2 style="font-size: clamp(24px,3vw,32px);">إتمام الطلب</h2></div>
+      <div><h2 style="font-size: clamp(24px,3vw,32px);" data-i18n="cart.checkout" data-i18n="checkout.title">إتمام الطلب</h2></div>
     </div>
 
     <div class="checkout-layout">
       <!-- FORM -->
       <form class="checkout-panel" id="checkoutForm" novalidate>
-        <h2>بيانات التوصيل</h2>
+        <h2 data-i18n="checkout.info">بيانات التوصيل</h2>
 
         <div class="field-row">
           <div class="field" id="field-name">
@@ -117,7 +117,7 @@
         </div>
 
         <div class="field">
-          <label style="margin-bottom:10px;">نوع التوصيل</label>
+          <label style="margin-bottom:10px;" data-i18n="checkout.delivery">نوع التوصيل</label>
           <div class="choice-row">
             <button type="button" class="choice-card selected" id="deliveryHomeBtn" data-delivery="home">
               <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
@@ -131,15 +131,15 @@
         </div>
 
         <div class="field">
-          <label>ملاحظات (اختياري)</label>
+          <label data-i18n="checkout.notes">ملاحظات (اختياري)</label>
           <textarea id="custNotes" rows="3"></textarea>
         </div>
 
-        <h2 style="margin-top:6px;">طريقة الدفع</h2>
+        <h2 style="margin-top:6px;" data-i18n="checkout.payment">طريقة الدفع</h2>
         <div class="payment-box">
           <div class="payment-radio"></div>
           <div>
-            <strong>الدفع عند الاستلام (نقداً)</strong>
+            <strong data-i18n="checkout.cod">الدفع عند الاستلام (نقداً)</strong>
             <small>تدفع المبلغ كاش عند استلام طلبك من المندوب</small>
           </div>
         </div>
@@ -151,12 +151,12 @@
 
       <!-- SUMMARY -->
       <div class="checkout-panel summary-sticky">
-        <h2>ملخص الطلب</h2>
+        <h2 data-i18n="checkout.summary">ملخص الطلب</h2>
         <div id="summaryLines"></div>
         <div style="border-top:1px solid var(--silver-200); margin-top:14px; padding-top:14px;">
-          <div class="totals-row"><span>المجموع الفرعي</span><strong id="summarySubtotal">0 د.ج</strong></div>
-          <div class="totals-row"><span>رسوم التوصيل</span><strong id="summaryDelivery">—</strong></div>
-          <div class="totals-row grand"><span>الإجمالي</span><span id="summaryTotal">0 د.ج</span></div>
+          <div class="totals-row"><span data-i18n="cart.subtotal">المجموع الفرعي</span><strong id="summarySubtotal">0 د.ج</strong></div>
+          <div class="totals-row"><span data-i18n="checkout.delivery.fee">رسوم التوصيل</span><strong id="summaryDelivery">—</strong></div>
+          <div class="totals-row grand"><span data-i18n="checkout.total">الإجمالي</span><span id="summaryTotal">0 د.ج</span></div>
         </div>
       </div>
     </div>
@@ -169,14 +169,14 @@
     <div class="success-icon">
       <svg width="38" height="38" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
     </div>
-    <h1 style="font-size: clamp(24px,3vw,30px); margin-bottom:10px;">تم استلام طلبك بنجاح!</h1>
+    <h1 style="font-size: clamp(24px,3vw,30px); margin-bottom:10px;" data-i18n="success.title">تم استلام طلبك بنجاح!</h1>
     <p class="text-faint">سيتصل بك فريقنا قريباً لتأكيد الطلب والتوصيل.</p>
     <div class="success-order-box">
-      <div class="text-faint" style="font-size:12.5px; margin-bottom:6px;">رقم الطلب</div>
+      <div class="text-faint" style="font-size:12.5px; margin-bottom:6px;" data-i18n="success.order">رقم الطلب</div>
       <div class="success-order-id" id="successOrderId">—</div>
       <div style="font-weight:800; font-size:18px; margin-top:12px;" id="successOrderTotal"></div>
     </div>
-    <a href="index.html" class="btn btn-primary">العودة للمتجر</a>
+    <a href="index.html" class="btn btn-primary" data-i18n="success.back">العودة للمتجر</a>
   </div>
 
 </main>
@@ -194,14 +194,14 @@
       <p class="footer-about">متجرك الموثوق للمكملات الغذائية الأصلية، نخدمك في الفرع وأونلاين عبر كل ولايات الجزائر.</p>
     </div>
     <div>
-      <h4>روابط سريعة</h4>
+      <h4 data-i18n="footer.links">روابط سريعة</h4>
       <ul>
         <li><a href="index.html">الرئيسية</a></li>
         <li><a href="shop.html">المتجر</a></li>
       </ul>
     </div>
     <div>
-      <h4>تواصل معنا</h4>
+      <h4 data-i18n="footer.contact">تواصل معنا</h4>
       <ul>
         <li class="footer-contact-item">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
@@ -235,7 +235,7 @@
     <div class="drawer-empty">
       <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
       <strong>سلتك فارغة حالياً</strong>
-      <span class="text-faint">أضف منتجات لتبدأ طلبك</span>
+      <span class="text-faint" data-i18n="cart.empty.sub">أضف منتجات لتبدأ طلبك</span>
     </div>
   </div>
   <div class="drawer-foot" id="drawerFoot" style="display:none;">
@@ -250,6 +250,7 @@
 <!-- Firebase SDK (نسخة compat — تعمل مباشرة بدون أدوات بناء) -->
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+<script src="js/i18n.js"></script>
 <script src="js/firebase-config.js"></script>
 <script src="js/data.js"></script>
 <script src="js/main.js"></script>
