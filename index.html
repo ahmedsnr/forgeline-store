@@ -24,10 +24,10 @@
     </a>
 
     <nav class="main-nav">
-      <a href="index.html" class="active">الرئيسية</a>
-      <a href="shop.html">المتجر</a>
-      <a href="shop.html#offers">العروض</a>
-      <a href="index.html#contact">اتصل بنا</a>
+      <a href="index.html" class="active" data-i18n="nav.home">الرئيسية</a>
+      <a href="shop.html" data-i18n="nav.shop">المتجر</a>
+      <a href="shop.html#offers" data-i18n="nav.offers">العروض</a>
+      <a href="index.html#contact" data-i18n="nav.contact">اتصل بنا</a>
     </nav>
 
     <div class="header-actions">
@@ -57,7 +57,7 @@
     <a href="index.html#contact">اتصل بنا</a>
   </nav>
 
-  <div class="announce-bar">توصيل مجاني للطلبات فوق 8,000 د.ج 🚚</div>
+  <div class="announce-bar" data-i18n="announce.text">توصيل مجاني للطلبات فوق 8,000 د.ج 🚚</div>
 </header>
 
 <!-- ============================================================
@@ -66,7 +66,7 @@
 <section class="hero">
   <div class="container hero-grid">
     <div class="fade-up">
-      <span class="eyebrow">وقود حقيقي لمجهود حقيقي</span>
+      <span class="eyebrow" data-i18n="hero.eyebrow">وقود حقيقي لمجهود حقيقي</span>
       <h1 class="hero-title">ابنِ قوتك.<br>بثبات.</h1>
       <p class="hero-sub">مكملات غذائية أصلية 100%، أفضل الماركات العالمية، توصيل لكل ولايات الجزائر والدفع عند الاستلام.</p>
       <div class="hero-cta-row">
@@ -74,7 +74,7 @@
           تسوق الآن
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="flip-x"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
         </a>
-        <a href="shop.html#offers" class="btn btn-outline-light">تصفح العروض</a>
+        <a href="shop.html#offers" class="btn btn-outline-light" data-i18n="hero.cta2">تصفح العروض</a>
       </div>
       <div class="hero-badges">
         <span class="hero-badge">
@@ -104,8 +104,8 @@
   <section class="section-tight container">
     <div class="section-head">
       <div>
-        <span class="eyebrow">تصفح حسب الحاجة</span>
-        <h2>تسوق حسب الفئة</h2>
+        <span class="eyebrow" data-i18n="section.categories.eyebrow">تصفح حسب الحاجة</span>
+        <h2 data-i18n="section.categories.title">تسوق حسب الفئة</h2>
       </div>
     </div>
     <div class="cat-rail">
@@ -150,8 +150,8 @@
   <section class="section container">
     <div class="section-head">
       <div>
-        <span class="eyebrow">المفضّلة لدى عملائنا</span>
-        <h2>الأكثر مبيعاً</h2>
+        <span class="eyebrow" data-i18n="section.bestsellers.eyebrow">المفضّلة لدى عملائنا</span>
+        <h2 data-i18n="section.bestsellers.title">الأكثر مبيعاً</h2>
       </div>
     </div>
     <div class="grid-products" id="bestsellersGrid"></div>
@@ -163,8 +163,8 @@
   <section class="section-tight container">
     <div class="section-head">
       <div>
-        <span class="eyebrow">آخر الإضافات</span>
-        <h2>وصل حديثاً</h2>
+        <span class="eyebrow" data-i18n="section.new.eyebrow">آخر الإضافات</span>
+        <h2 data-i18n="section.new.title">وصل حديثاً</h2>
       </div>
     </div>
     <div class="grid-products" id="newArrivalsGrid"></div>
@@ -176,8 +176,8 @@
   <section class="section container" id="offers">
     <div class="section-head">
       <div>
-        <span class="eyebrow">لفترة محدودة</span>
-        <h2>عروض حصرية</h2>
+        <span class="eyebrow" data-i18n="section.offers.eyebrow">لفترة محدودة</span>
+        <h2 data-i18n="section.offers.title">عروض حصرية</h2>
       </div>
     </div>
     <div class="offer-grid" id="offersGrid">
@@ -199,7 +199,7 @@
       <p class="footer-about">متجرك الموثوق للمكملات الغذائية الأصلية، نخدمك في الفرع وأونلاين عبر كل ولايات الجزائر.</p>
     </div>
     <div>
-      <h4>روابط سريعة</h4>
+      <h4 data-i18n="footer.links">روابط سريعة</h4>
       <ul>
         <li><a href="index.html">الرئيسية</a></li>
         <li><a href="shop.html">المتجر</a></li>
@@ -207,7 +207,7 @@
       </ul>
     </div>
     <div>
-      <h4>تواصل معنا</h4>
+      <h4 data-i18n="footer.contact">تواصل معنا</h4>
       <ul>
         <li class="footer-contact-item">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
@@ -240,22 +240,23 @@
   <div class="drawer-body" id="drawerBody">
     <div class="drawer-empty">
       <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
-      <strong>سلتك فارغة حالياً</strong>
-      <span class="text-faint">أضف منتجات لتبدأ طلبك</span>
+      <strong data-i18n="cart.empty.title">سلتك فارغة حالياً</strong>
+      <span class="text-faint" data-i18n="cart.empty.sub">أضف منتجات لتبدأ طلبك</span>
     </div>
   </div>
   <div class="drawer-foot" id="drawerFoot" style="display:none;">
     <div class="drawer-subtotal">
-      <span>المجموع الفرعي</span>
+      <span data-i18n="cart.subtotal">المجموع الفرعي</span>
       <span id="drawerSubtotal">0 د.ج</span>
     </div>
-    <a href="checkout.html" class="btn btn-primary btn-block">إتمام الطلب</a>
+    <a href="checkout.html" class="btn btn-primary btn-block" data-i18n="cart.checkout">إتمام الطلب</a>
   </div>
 </aside>
 
 <!-- Firebase SDK (نسخة compat — تعمل مباشرة بدون أدوات بناء) -->
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+<script src="js/i18n.js"></script>
 <script src="js/firebase-config.js"></script>
 <script src="js/data.js"></script>
 <script src="js/main.js"></script>
