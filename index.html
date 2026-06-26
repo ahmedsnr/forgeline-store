@@ -20,7 +20,7 @@
 
     <a href="index.html" class="brand">
       <svg width="26" height="26" viewBox="0 0 40 40" fill="none"><path d="M6 32V8h6.5l8 14 8-14H35v24h-6V18l-6.5 11h-1L15 18v14H6z" fill="currentColor"/></svg>
-      <span>فورجلاين</span>
+      <span data-i18n="nav.brand">فورجلاين</span>
     </a>
 
     <nav class="main-nav">
@@ -33,7 +33,7 @@
     <div class="header-actions">
       <div class="header-search">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-        <input type="text" placeholder="ابحث عن منتج أو ماركة..." id="headerSearch">
+        <input type="text" data-i18n-ph="search.placeholder" placeholder="ابحث عن منتج أو ماركة..." id="headerSearch">
       </div>
       <button class="lang-switch" id="langSwitch">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
@@ -49,9 +49,9 @@
   <nav class="mobile-nav container" id="mobileNav">
     <form class="mobile-search" style="position:relative;" onsubmit="event.preventDefault(); var v=document.getElementById('mobileSearch').value.trim(); if(v){window.location.href='shop.html?q='+encodeURIComponent(v);}">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-      <input type="text" placeholder="ابحث عن منتج أو ماركة..." id="mobileSearch">
+      <input type="text" data-i18n-ph="search.placeholder" placeholder="ابحث عن منتج أو ماركة..." id="mobileSearch">
     </form>
-    <a href="index.html">الرئيسية</a>
+    <a href="index.html" data-i18n="nav.home">الرئيسية</a>
     <a href="shop.html">المتجر</a>
     <a href="shop.html#offers">العروض</a>
     <a href="index.html#contact">اتصل بنا</a>
@@ -68,7 +68,7 @@
     <div class="fade-up">
       <span class="eyebrow" data-i18n="hero.eyebrow">وقود حقيقي لمجهود حقيقي</span>
       <h1 class="hero-title">ابنِ قوتك.<br>بثبات.</h1>
-      <p class="hero-sub">مكملات غذائية أصلية 100%، أفضل الماركات العالمية، توصيل لكل ولايات الجزائر والدفع عند الاستلام.</p>
+      <p class="hero-sub" data-i18n="hero.sub"><span data-i18n="hero.sub">مكملات غذائية أصلية 100%، أفضل الماركات العالمية، توصيل لكل ولايات الجزائر والدفع عند الاستلام.</span></p>
       <div class="hero-cta-row">
         <a href="shop.html" class="btn btn-gold">
           تسوق الآن
