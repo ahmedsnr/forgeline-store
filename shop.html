@@ -49,10 +49,10 @@
     </a>
 
     <nav class="main-nav">
-      <a href="index.html">الرئيسية</a>
-      <a href="shop.html" class="active">المتجر</a>
-      <a href="shop.html#offers">العروض</a>
-      <a href="index.html#contact">اتصل بنا</a>
+      <a href="index.html" data-i18n="nav.home">الرئيسية</a>
+      <a href="shop.html" class="active" data-i18n="nav.shop">المتجر</a>
+      <a href="shop.html#offers" data-i18n="nav.offers">العروض</a>
+      <a href="index.html#contact" data-i18n="nav.contact">اتصل بنا</a>
     </nav>
 
     <div class="header-actions">
@@ -82,7 +82,7 @@
     <a href="index.html#contact">اتصل بنا</a>
   </nav>
 
-  <div class="announce-bar">توصيل مجاني للطلبات فوق 8,000 د.ج 🚚</div>
+  <div class="announce-bar" data-i18n="announce.text">توصيل مجاني للطلبات فوق 8,000 د.ج 🚚</div>
 </header>
 
 <main class="container section-tight">
@@ -95,7 +95,7 @@
   <div class="section-head">
     <div>
       <span class="eyebrow">كل ما تحتاجه</span>
-      <h2>كل المنتجات</h2>
+      <h2 data-i18n="section.all.title">كل المنتجات</h2>
     </div>
     <span class="section-count" id="resultsCount"></span>
   </div>
@@ -106,13 +106,13 @@
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
       الكل
     </button>
-    <button class="cat-pill" data-cat="protein">بروتين</button>
-    <button class="cat-pill" data-cat="preworkout">قوة وطاقة</button>
-    <button class="cat-pill" data-cat="creatine">كرياتين</button>
-    <button class="cat-pill" data-cat="vitamins">فيتامينات ومعادن</button>
-    <button class="cat-pill" data-cat="mass">ضخامة عضلية</button>
-    <button class="cat-pill" data-cat="aminos">أحماض أمينية</button>
-    <button class="cat-pill" data-cat="fatburn">حوارق الدهون</button>
+    <button class="cat-pill" data-cat="protein" data-i18n="cat.protein">بروتين</button>
+    <button class="cat-pill" data-cat="preworkout" data-i18n="cat.preworkout">قوة وطاقة</button>
+    <button class="cat-pill" data-cat="creatine" data-i18n="cat.creatine">كرياتين</button>
+    <button class="cat-pill" data-cat="vitamins" data-i18n="cat.vitamins">فيتامينات ومعادن</button>
+    <button class="cat-pill" data-cat="mass" data-i18n="cat.mass">ضخامة عضلية</button>
+    <button class="cat-pill" data-cat="aminos" data-i18n="cat.aminos">أحماض أمينية</button>
+    <button class="cat-pill" data-cat="fatburn" data-i18n="cat.fatburn">حوارق الدهون</button>
   </div>
 
   <div class="shop-layout">
@@ -141,7 +141,7 @@
         </select>
       </div>
 
-      <a href="#" id="clearFilters" class="filters-clear">مسح كل الفلاتر</a>
+      <a href="#" id="clearFilters" class="filters-clear" data-i18n="filter.clear">مسح كل الفلاتر</a>
     </aside>
 
     <!-- ============================================================
@@ -180,7 +180,7 @@
       <p class="footer-about">متجرك الموثوق للمكملات الغذائية الأصلية، نخدمك في الفرع وأونلاين عبر كل ولايات الجزائر.</p>
     </div>
     <div>
-      <h4>روابط سريعة</h4>
+      <h4 data-i18n="footer.links">روابط سريعة</h4>
       <ul>
         <li><a href="index.html">الرئيسية</a></li>
         <li><a href="shop.html">المتجر</a></li>
@@ -188,7 +188,7 @@
       </ul>
     </div>
     <div>
-      <h4>تواصل معنا</h4>
+      <h4 data-i18n="footer.contact">تواصل معنا</h4>
       <ul>
         <li class="footer-contact-item">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
@@ -221,22 +221,23 @@
   <div class="drawer-body" id="drawerBody">
     <div class="drawer-empty">
       <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
-      <strong>سلتك فارغة حالياً</strong>
-      <span class="text-faint">أضف منتجات لتبدأ طلبك</span>
+      <strong data-i18n="cart.empty.title">سلتك فارغة حالياً</strong>
+      <span class="text-faint" data-i18n="cart.empty.sub">أضف منتجات لتبدأ طلبك</span>
     </div>
   </div>
   <div class="drawer-foot" id="drawerFoot" style="display:none;">
     <div class="drawer-subtotal">
-      <span>المجموع الفرعي</span>
+      <span data-i18n="cart.subtotal">المجموع الفرعي</span>
       <span id="drawerSubtotal">0 د.ج</span>
     </div>
-    <a href="checkout.html" class="btn btn-primary btn-block">إتمام الطلب</a>
+    <a href="checkout.html" class="btn btn-primary btn-block" data-i18n="cart.checkout">إتمام الطلب</a>
   </div>
 </aside>
 
 <!-- Firebase SDK (نسخة compat — تعمل مباشرة بدون أدوات بناء) -->
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+<script src="js/i18n.js"></script>
 <script src="js/firebase-config.js"></script>
 <script src="js/data.js"></script>
 <script src="js/main.js"></script>
