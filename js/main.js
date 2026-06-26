@@ -69,14 +69,18 @@
   function applyLang() {
     document.documentElement.lang = lang;
     document.documentElement.dir = lang === "ar" ? "rtl" : "ltr";
+    // ترجمة كل العناصر الثابتة في HTML
+    if (window.applyTranslations) window.applyTranslations(lang);
+    // تحديث placeholders خانات البحث
+    const ph = lang === "ar" ? "ابحث عن منتج أو ماركة..." : "Rechercher un produit ou une marque...";
+    document.querySelectorAll("#headerSearch, #mobileSearch").forEach(el => el.placeholder = ph);
+    // تحديث زرار تبديل اللغة
     const switchBtn = document.getElementById("langSwitch");
     if (switchBtn) {
-      const label = switchBtn.querySelector("svg") ? switchBtn : switchBtn;
-      switchBtn.lastChild && (switchBtn.lastChild.textContent = " " + (lang === "ar" ? "FR" : "AR"));
+      const svg = switchBtn.querySelector("svg");
+      switchBtn.textContent = lang === "ar" ? "FR" : "AR";
+      if (svg) switchBtn.prepend(svg);
     }
-    document.querySelectorAll("[data-search-input]").forEach((el) => (el.placeholder = t("search_ph")));
-    const headerSearch = document.getElementById("headerSearch");
-    if (headerSearch) headerSearch.placeholder = t("search_ph");
   }
 
   function toggleLang() {
