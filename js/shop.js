@@ -311,4 +311,37 @@
       });
     }
   });
+
+  // إعادة رسم المنتجات عند تغيير اللغة
+  document.addEventListener("forgeline:langchange", () => {
+    applyFilters();
+    // تحديث عناوين الفئات
+    const catRail = document.getElementById("catRail");
+    if (catRail && window.applyTranslations) {
+      window.applyTranslations(window.ForgeLine.lang);
+    }
+    // تحديث الـ sort select
+    const sortSelect = document.getElementById("sortSelect");
+    const sortMobile = document.getElementById("sortSelectMobile");
+    const isFr = window.ForgeLine.lang === "fr";
+    const sortOptions = [
+      { value: "default", ar: "ترتيب: الأكثر صلة", fr: "Trier: Pertinence" },
+      { value: "price_asc", ar: "السعر: من الأقل", fr: "Prix croissant" },
+      { value: "price_desc", ar: "السعر: من الأعلى", fr: "Prix décroissant" },
+      { value: "newest", ar: "الأحدث", fr: "Plus récents" },
+    ];
+    [sortSelect, sortMobile].forEach(sel => {
+      if (!sel) return;
+      Array.from(sel.options).forEach(opt => {
+        const found = sortOptions.find(o => o.value === opt.value);
+        if (found) opt.textContent = isFr ? found.fr : found.ar;
+      });
+    });
+    // تحديث كلمة "فلاتر"
+    const filterBtn = document.getElementById("mobileFilterToggle");
+    if (filterBtn) {
+      const textNode = Array.from(filterBtn.childNodes).find(n => n.nodeType === 3);
+      if (textNode) textNode.textContent = isFr ? " Filtres" : " فلاتر";
+    }
+  });
 })();
