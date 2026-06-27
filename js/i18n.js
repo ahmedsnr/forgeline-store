@@ -138,6 +138,7 @@ const I18N = {
     "footer.address": "ولاية سيدي بلعباس، الجزائر",
     "footer.admin": "لوحة تحكم المالك",
     "footer.rights": "جميع الحقوق محفوظة",
+    "footer.copyright": "© 2026 فورجلاين — جميع الحقوق محفوظة",
 
     /* Product detail */
     "pdp.stock.out": "غير متوفر",
@@ -280,6 +281,7 @@ const I18N = {
     "footer.address": "Wilaya de Sidi Bel Abbès, Algérie",
     "footer.admin": "Panneau d'administration",
     "footer.rights": "Tous droits réservés",
+    "footer.copyright": "© 2026 ForgeLine — Tous droits réservés",
 
     /* Product detail */
     "pdp.stock.out": "Rupture de stock",
