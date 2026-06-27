@@ -88,6 +88,8 @@
     Store.setLang(lang);
     applyLang();
     renderAll();
+    // إشارة لـ shop.js و product.js وغيرها عشان يعيدوا الرسم بالترجمة الجديدة
+    document.dispatchEvent(new CustomEvent("forgeline:langchange", { detail: { lang } }));
   }
 
   /* ----------------------------------------------------------------------
