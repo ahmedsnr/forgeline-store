@@ -169,10 +169,43 @@
 
   async function updateOrderStatus(orderId, newStatus) {
     try {
-      await Store.updateOrderStatus(orderId, newStatus);
+      const order = allOrdersCache.find((o) => o.id === orderId);
+      if (!order) return;
+
+      const wasCancelled = order.status === "cancelled";
+      const willBeCancelled = newStatus === "cancelled";
+
+      // لو الحالة فعلياً اتغيرت من/إلى "ملغي"، لازم نعدّل المخزون بأمان
+      if (wasCancelled !== willBeCancelled) {
+        await db.runTransaction(async (transaction) => {
+          const orderRef = db.collection("orders").doc(orderId);
+          const orderSnap = await transaction.get(orderRef);
+          if (!orderSnap.exists) throw new Error("الطلب غير موجود");
+          const orderData = orderSnap.data();
+
+          const productRefs = orderData.items.map((it) => db.collection("products").doc(it.id));
+          const productSnaps = await Promise.all(productRefs.map((ref) => transaction.get(ref)));
+
+          productSnaps.forEach((snap, i) => {
+            if (!snap.exists) return;
+            const currentStock = snap.data().stock || 0;
+            const qty = orderData.items[i].qty;
+            // إلغاء الطلب → نرجع الكمية للمخزون (+)
+            // إعادة تفعيل طلب كان ملغياً → ننقص الكمية تاني (-)
+            const newStock = willBeCancelled ? currentStock + qty : Math.max(0, currentStock - qty);
+            transaction.update(productRefs[i], { stock: newStock });
+          });
+
+          transaction.update(orderRef, { status: newStatus });
+        });
+      } else {
+        // تغيير عادي للحالة بدون أي تأثير على المخزون
+        await Store.updateOrderStatus(orderId, newStatus);
+      }
       // مفيش داعي لنداء render() هنا — الـ onSnapshot listener هيلتقط
       // التغيير تلقائياً ويحدّث الواجهة لوحده فوراً.
     } catch (e) {
+      console.error("updateOrderStatus failed:", e);
       alert("تعذّر تحديث حالة الطلب. تأكد من اتصالك بالإنترنت.");
     }
   }
