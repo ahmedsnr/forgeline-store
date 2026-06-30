@@ -32,9 +32,11 @@
     applySettings();
   }
 
-  /* تطبيق الإعدادات العامة على عناصر الواجهة (شريط الإعلان...) */
+  /* تطبيق الإعدادات العامة على عناصر الواجهة (شريط الإعلان، صورة الهيرو، أرقام الهاتف...) */
   function applySettings() {
     if (!settingsCache) return;
+
+    // شريط الإعلان
     const bar = document.querySelector(".announce-bar");
     if (bar) {
       if (settingsCache.announceEnabled === false) {
@@ -44,6 +46,24 @@
         const text = lang === "ar" ? settingsCache.announceText_ar : settingsCache.announceText_fr;
         if (text) bar.textContent = text;
       }
+    }
+
+    // صورة الـ Hero (موجودة فقط في الصفحة الرئيسية)
+    const heroImg = document.getElementById("heroImage");
+    if (heroImg && settingsCache.heroImage) {
+      heroImg.src = settingsCache.heroImage;
+    }
+
+    // أرقام الهاتف في الفوتر
+    const phonesList = document.getElementById("footerPhones");
+    if (phonesList) {
+      const phones = Array.isArray(settingsCache.phoneNumbers) ? settingsCache.phoneNumbers : [];
+      phonesList.innerHTML = phones.map((num) => `
+        <li class="footer-contact-item">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+          <a href="tel:${num.replace(/\\s/g, "")}" dir="ltr" style="unicode-bidi:plaintext;">${num}</a>
+        </li>
+      `).join("");
     }
   }
 
