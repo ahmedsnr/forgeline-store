@@ -36,10 +36,10 @@
   function populateWilayas() {
     const select = document.getElementById("custWilaya");
     if (!select) return;
-    WILAYAS.forEach((w) => {
+    WILAYAS_DATA.forEach((w) => {
       const opt = document.createElement("option");
-      opt.value = w;
-      opt.textContent = w;
+      opt.value = w.name; // القيمة المخزنة في الطلب تبقى الاسم فقط (للتوافق مع DELIVERY_PRICES)
+      opt.textContent = `${w.code.toString().padStart(2, "0")} - ${w.name}`;
       select.appendChild(opt);
     });
   }
