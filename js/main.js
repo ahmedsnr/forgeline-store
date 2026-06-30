@@ -360,7 +360,7 @@
         if (!prod) return "";
         return `
         <div class="offer-card">
-          <img src="${o.img || prod.img}" alt="">
+          <img src="${o.img || prod.img || (settingsCache && settingsCache.offerBannerImage) || ""}" alt="">
           <div class="offer-content">
             <span class="offer-discount">-${o.discount}%</span>
             <h3>${lang === "ar" ? o.title_ar : o.title_fr}</h3>
