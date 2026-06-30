@@ -18,11 +18,33 @@
      لازم ننادي refreshDataCache() عشان الكاش يتحدث. */
   let productsCache = [];
   let offersCache = [];
+  let settingsCache = null;
 
   async function refreshDataCache() {
-    const [products, offers] = await Promise.all([Store.getProducts(), Store.getOffers()]);
+    const [products, offers, settings] = await Promise.all([
+      Store.getProducts(),
+      Store.getOffers(),
+      Store.getSettings(),
+    ]);
     productsCache = products;
     offersCache = offers;
+    settingsCache = settings;
+    applySettings();
+  }
+
+  /* تطبيق الإعدادات العامة على عناصر الواجهة (شريط الإعلان...) */
+  function applySettings() {
+    if (!settingsCache) return;
+    const bar = document.querySelector(".announce-bar");
+    if (bar) {
+      if (settingsCache.announceEnabled === false) {
+        bar.style.display = "none";
+      } else {
+        bar.style.display = "";
+        const text = lang === "ar" ? settingsCache.announceText_ar : settingsCache.announceText_fr;
+        if (text) bar.textContent = text;
+      }
+    }
   }
 
   /* ----------------------------------------------------------------------
@@ -87,6 +109,7 @@
     lang = lang === "ar" ? "fr" : "ar";
     Store.setLang(lang);
     applyLang();
+    applySettings();
     renderAll();
     // إشارة لـ shop.js و product.js وغيرها عشان يعيدوا الرسم بالترجمة الجديدة
     document.dispatchEvent(new CustomEvent("forgeline:langchange", { detail: { lang } }));
