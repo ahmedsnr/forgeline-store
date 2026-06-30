@@ -430,4 +430,35 @@ const Store = {
   setLang(lang) {
     localStorage.setItem(this.LOCAL_KEYS.lang, lang);
   },
+
+  /* ---------------- SETTINGS العامة (شريط الإعلان، صور، أرقام هاتف...) ---------------- */
+  DEFAULT_SETTINGS: {
+    announceEnabled: true,
+    announceText_ar: "توصيل مجاني للطلبات فوق 8,000 د.ج 🚚",
+    announceText_fr: "Livraison gratuite dès 8 000 DA 🚚",
+    heroImage: "",
+    offerBannerImage: "",
+    phoneNumbers: [],
+  },
+
+  async getSettings() {
+    try {
+      const doc = await db.collection("settings").doc("general").get();
+      if (doc.exists) {
+        return { ...this.DEFAULT_SETTINGS, ...doc.data() };
+      }
+      return { ...this.DEFAULT_SETTINGS };
+    } catch (e) {
+      console.error("getSettings failed:", e);
+      return { ...this.DEFAULT_SETTINGS };
+    }
+  },
+  async saveSettings(settings) {
+    try {
+      await db.collection("settings").doc("general").set(settings, { merge: true });
+    } catch (e) {
+      console.error("saveSettings failed:", e);
+      throw e;
+    }
+  },
 };
