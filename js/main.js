@@ -348,28 +348,88 @@
   function renderOffersBanner() {
     const el = document.getElementById("offersGrid");
     if (!el) return;
-    const products = productsCache;
     const activeOffers = getActiveOffers();
     if (activeOffers.length === 0) {
       el.closest("section").style.display = "none";
       return;
     }
-    el.innerHTML = activeOffers
-      .map((o) => {
-        const prod = products.find((p) => p.id === o.productId);
-        if (!prod) return "";
-        return `
-        <div class="offer-card">
-          <img src="${o.img || prod.img || (settingsCache && settingsCache.offerBannerImage) || ""}" alt="">
-          <div class="offer-content">
-            <span class="offer-discount">-${o.discount}%</span>
-            <h3>${lang === "ar" ? o.title_ar : o.title_fr}</h3>
-            <p>${lang === "ar" ? prod.name_ar : prod.name_fr}</p>
-            <div class="offer-end">${t("offer_ends")} ${new Date(o.end).toLocaleDateString()}</div>
+    el.innerHTML = activeOffers.map((o) => offerCardHTML(o)).join("");
+
+    // ربط أزرار "أضف للسلة" للباقات
+    el.querySelectorAll("[data-bundle-offer]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const offerId = btn.getAttribute("data-bundle-offer");
+        const offer = activeOffers.find((o) => o.id === offerId);
+        if (!offer || !offer.bundleProducts) return;
+        offer.bundleProducts.forEach((item) => addToCart(item.productId, item.qty || 1));
+      });
+    });
+
+    // ربط أزرار "أضف للسلة" للعروض العادية
+    el.querySelectorAll("[data-offer-product]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        addToCart(btn.getAttribute("data-offer-product"), 1);
+      });
+    });
+  }
+
+  function offerCardHTML(o) {
+    const isBundle = o.type === "bundle";
+    const defaultImg = (settingsCache && settingsCache.offerBannerImage) || "";
+
+    if (isBundle) {
+      // حساب السعر الأصلي الإجمالي للباقة
+      const originalTotal = (o.bundleProducts || []).reduce((sum, item) => {
+        const prod = productsCache.find((p) => p.id === item.productId);
+        return sum + (prod ? prod.price * (item.qty || 1) : 0);
+      }, 0);
+      const savings = originalTotal > 0 ? originalTotal - o.bundlePrice : 0;
+      const savingsPct = originalTotal > 0 ? Math.round((savings / originalTotal) * 100) : 0;
+      const imgUrl = o.img || defaultImg;
+      const productNames = (o.bundleProducts || [])
+        .map((item) => {
+          const prod = productsCache.find((p) => p.id === item.productId);
+          return prod ? (lang === "ar" ? prod.name_ar : prod.name_fr) : "";
+        })
+        .filter(Boolean)
+        .join(" + ");
+
+      return `
+      <div class="offer-card offer-card-bundle">
+        <img src="${imgUrl}" alt="">
+        <div class="offer-content">
+          <span class="offer-discount">${savings > 0 ? `-${savingsPct}%` : "باقة"}</span>
+          <span class="bundle-badge">${lang === "ar" ? "باقة تجميعية" : "Pack"}</span>
+          <h3>${lang === "ar" ? o.title_ar : o.title_fr}</h3>
+          <p class="bundle-products-line">${productNames}</p>
+          <div class="bundle-price-row">
+            <span class="bundle-price">${fmt(o.bundlePrice)} ${CURRENCY}</span>
+            ${originalTotal > 0 ? `<span class="bundle-original">${fmt(originalTotal)}</span>` : ""}
           </div>
-        </div>`;
-      })
-      .join("");
+          <div class="offer-end">${t("offer_ends")} ${new Date(o.end).toLocaleDateString()}</div>
+          <button class="btn btn-primary btn-sm" data-bundle-offer="${o.id}" style="margin-top:12px;width:100%;">
+            + ${lang === "ar" ? "أضف الباقة للسلة" : "Ajouter le pack au panier"}
+          </button>
+        </div>
+      </div>`;
+    }
+
+    // عرض عادي
+    const prod = productsCache.find((p) => p.id === o.productId);
+    if (!prod) return "";
+    return `
+    <div class="offer-card">
+      <img src="${o.img || prod.img || defaultImg}" alt="">
+      <div class="offer-content">
+        <span class="offer-discount">-${o.discount}%</span>
+        <h3>${lang === "ar" ? o.title_ar : o.title_fr}</h3>
+        <p>${lang === "ar" ? prod.name_ar : prod.name_fr}</p>
+        <div class="offer-end">${t("offer_ends")} ${new Date(o.end).toLocaleDateString()}</div>
+        <button class="btn btn-primary btn-sm" data-offer-product="${prod.id}" style="margin-top:12px;width:100%;">
+          + ${lang === "ar" ? "أضف للسلة" : "Ajouter au panier"}
+        </button>
+      </div>
+    </div>`;
   }
 
   /* ----------------------------------------------------------------------
