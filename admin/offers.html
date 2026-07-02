@@ -85,32 +85,81 @@
     <form class="panel admin-form-panel" id="offerForm">
       <input type="hidden" id="offerId">
 
+      <!-- نوع العرض -->
+      <div class="field" style="margin-bottom:22px;">
+        <label style="font-size:14px; font-weight:800; margin-bottom:10px; display:block;">نوع العرض</label>
+        <div style="display:flex; gap:12px; flex-wrap:wrap;">
+          <label style="display:flex; align-items:center; gap:9px; cursor:pointer; padding:12px 18px; border:2px solid var(--silver-200); border-radius:12px; flex:1; min-width:160px; transition:all 0.2s;" id="typeRegularLabel">
+            <input type="radio" name="offerType" id="typeRegular" value="regular" checked style="accent-color:var(--navy-950);">
+            <div>
+              <div style="font-weight:800; font-size:13.5px;">عرض عادي</div>
+              <div style="font-size:11.5px; color:var(--ink-faint);">خصم % على منتج واحد</div>
+            </div>
+          </label>
+          <label style="display:flex; align-items:center; gap:9px; cursor:pointer; padding:12px 18px; border:2px solid var(--silver-200); border-radius:12px; flex:1; min-width:160px; transition:all 0.2s;" id="typeBundleLabel">
+            <input type="radio" name="offerType" id="typeBundle" value="bundle" style="accent-color:var(--navy-950);">
+            <div>
+              <div style="font-weight:800; font-size:13.5px;">باقة تجميعية</div>
+              <div style="font-size:11.5px; color:var(--ink-faint);">عدة منتجات بسعر خاص</div>
+            </div>
+          </label>
+        </div>
+      </div>
+
+      <!-- العنوان -->
       <div class="field-row">
         <div class="field">
           <label>عنوان العرض (عربي) <span class="req">*</span></label>
-          <input type="text" id="fTitleAr" placeholder="مثال: تخفيض على البروتين">
+          <input type="text" id="fTitleAr" placeholder="مثال: باقة البناء الكامل">
         </div>
         <div class="field">
           <label>عنوان العرض (فرنسي)</label>
-          <input type="text" id="fTitleFr" placeholder="ex: Promo Protéine">
+          <input type="text" id="fTitleFr" placeholder="ex: Pack Performance Complète">
         </div>
       </div>
 
-      <div class="field">
-        <label>المنتج المرتبط بالعرض <span class="req">*</span></label>
-        <select id="fProductId">
-          <option value="">اختر منتجاً...</option>
-        </select>
-      </div>
-
-      <div class="field-row">
+      <!-- عرض عادي: منتج + خصم % -->
+      <div id="regularFields">
         <div class="field">
-          <label>نسبة الخصم % <span class="req">*</span></label>
-          <input type="number" id="fDiscount" min="1" max="99" placeholder="مثال: 15">
+          <label>المنتج المرتبط بالعرض <span class="req">*</span></label>
+          <select id="fProductId">
+            <option value="">اختر منتجاً...</option>
+          </select>
         </div>
-        <div class="field"></div>
+        <div class="field-row">
+          <div class="field">
+            <label>نسبة الخصم % <span class="req">*</span></label>
+            <input type="number" id="fDiscount" min="1" max="99" placeholder="مثال: 15">
+          </div>
+          <div class="field"></div>
+        </div>
       </div>
 
+      <!-- باقة تجميعية: منتجات متعددة + سعر ثابت -->
+      <div id="bundleFields" style="display:none;">
+        <div class="field">
+          <label style="font-weight:800;">منتجات الباقة <span class="req">*</span></label>
+          <p class="text-faint" style="font-size:12px; margin-bottom:12px;">اختر المنتجات التي تتكون منها الباقة (2 منتجات أو أكثر)</p>
+          <div id="bundleProductsList" style="display:flex; flex-direction:column; gap:8px; margin-bottom:12px;"></div>
+          <button type="button" id="addBundleProductBtn" class="btn btn-outline btn-sm">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            إضافة منتج للباقة
+          </button>
+        </div>
+        <div class="field-row">
+          <div class="field">
+            <label>السعر الإجمالي للباقة (د.ج) <span class="req">*</span></label>
+            <input type="number" id="fBundlePrice" min="0" placeholder="مثال: 8500">
+          </div>
+          <div class="field">
+            <div id="bundleSavings" style="padding:12px; background:var(--navy-50); border-radius:10px; font-size:13px; color:var(--ink-faint); margin-top:28px;">
+              أدخل السعر لحساب التوفير
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- التواريخ (مشتركة) -->
       <div class="field-row">
         <div class="field">
           <label>تاريخ البداية <span class="req">*</span></label>
@@ -122,10 +171,11 @@
         </div>
       </div>
 
+      <!-- الصورة (مشتركة) -->
       <div class="field">
-        <label>صورة العرض (البانر)</label>
+        <label>صورة العرض/الباقة (البانر)</label>
         <input type="file" id="fOfferImageFile" accept="image/*">
-        <p class="text-faint" style="font-size:11.5px; margin-top:6px;">اختر صورة بانر للعرض من جهازك (اختياري — لو فارغة هتستخدم صورة المنتج)</p>
+        <p class="text-faint" style="font-size:11.5px; margin-top:6px;">اختياري — لو فارغة هتستخدم صورة المنتج أو الصورة الافتراضية</p>
         <div id="offerImagePreview" style="width:100%;max-width:360px;height:130px;border-radius:10px;overflow:hidden;background:var(--navy-50);margin-top:10px;border:1px solid var(--silver-200);"></div>
         <input type="hidden" id="fOfferImageCurrentUrl">
       </div>
