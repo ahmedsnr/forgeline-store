@@ -19,16 +19,19 @@
   let productsCache = [];
   let offersCache = [];
   let settingsCache = null;
+  let categoriesCache = [];
 
   async function refreshDataCache() {
-    const [products, offers, settings] = await Promise.all([
+    const [products, offers, settings, categories] = await Promise.all([
       Store.getProducts(),
       Store.getOffers(),
       Store.getSettings(),
+      Store.getCategories(),
     ]);
     productsCache = products;
     offersCache = offers;
     settingsCache = settings;
+    categoriesCache = categories;
     applySettings();
   }
 
@@ -615,6 +618,7 @@
     get lang() { return lang; },
     get products() { return productsCache; },
     get offers() { return offersCache; },
+    get categories() { return categoriesCache; },
     refreshDataCache,
     t, fmt,
     addToCart, updateCartQty, removeFromCart,
