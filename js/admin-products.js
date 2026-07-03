@@ -9,6 +9,7 @@
   let productsCache = [];
   let selectedImageFile = null;
   let selectedExtraImageFiles = [];
+  let variants = []; // [{name, stock}]
 
   document.addEventListener("DOMContentLoaded", () => {
     AdminAuth.requireLogin();
@@ -16,9 +17,69 @@
     setupListActions();
     setupFormActions();
     setupImageInputs();
+    setupVariants();
     loadCategoriesIntoSelect();
     listenToProducts();
   });
+
+  /* ----------------------------------------------------------------------
+     VARIANTS (أذواق / نكهات)
+     ---------------------------------------------------------------------- */
+  function setupVariants() {
+    document.getElementById("addVariantBtn")?.addEventListener("click", () => {
+      variants.push({ name: "", stock: 0 });
+      renderVariants();
+      // Focus على آخر خانة اسم
+      const inputs = document.querySelectorAll("[data-variant-name]");
+      if (inputs.length) inputs[inputs.length - 1].focus();
+    });
+  }
+
+  function renderVariants() {
+    const container = document.getElementById("variantsList");
+    if (!container) return;
+
+    if (variants.length === 0) {
+      container.innerHTML = `<p class="text-faint" style="font-size:12.5px;">لا توجد أذواق — المنتج سيُباع بدون اختيار ذوق</p>`;
+      return;
+    }
+
+    container.innerHTML = variants.map((v, i) => `
+      <div style="display:flex; gap:8px; align-items:center; background:var(--navy-50); padding:10px 12px; border-radius:10px;">
+        <input type="text" value="${escapeAttr(v.name)}" data-variant-name="${i}"
+          placeholder="اسم الذوق (مثال: Vanille)"
+          style="flex:1; padding:9px 12px; border:1.5px solid var(--silver-200); border-radius:8px; font-size:13.5px;">
+        <input type="number" value="${v.stock || 0}" data-variant-stock="${i}" min="0"
+          placeholder="مخزون"
+          style="width:80px; padding:9px 10px; border:1.5px solid var(--silver-200); border-radius:8px; font-size:13.5px; text-align:center;">
+        <span style="font-size:11px; color:var(--ink-faint); white-space:nowrap;">د.ج مخزون</span>
+        <button type="button" data-remove-variant="${i}" class="icon-action-btn danger" title="حذف">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+    `).join("");
+
+    container.querySelectorAll("[data-variant-name]").forEach((inp) => {
+      inp.addEventListener("input", () => {
+        variants[Number(inp.getAttribute("data-variant-name"))].name = inp.value;
+      });
+    });
+    container.querySelectorAll("[data-variant-stock]").forEach((inp) => {
+      inp.addEventListener("input", () => {
+        variants[Number(inp.getAttribute("data-variant-stock"))].stock = Math.max(0, Number(inp.value) || 0);
+      });
+    });
+    container.querySelectorAll("[data-remove-variant]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        variants.splice(Number(btn.getAttribute("data-remove-variant")), 1);
+        renderVariants();
+      });
+    });
+  }
+
+  function escapeAttr(str) {
+    return String(str || "").replace(/"/g, "&quot;");
+  }
 
   async function loadCategoriesIntoSelect() {
     try {
@@ -255,6 +316,10 @@
     document.getElementById("fBest").checked = !!p.best;
     document.getElementById("fNew").checked = !!p.isNew;
 
+    // تحميل الأذواق
+    variants = Array.isArray(p.variants) ? p.variants.map((v) => ({ ...v })) : [];
+    renderVariants();
+
     selectedImageFile = null;
     selectedExtraImageFiles = [];
     document.getElementById("fImageFile").value = "";
@@ -266,7 +331,6 @@
         .map((url) => `<img src="${url}" alt="" style="width:60px;height:60px;object-fit:cover;border-radius:8px;">`)
         .join("");
     }
-
     hideFormError();
   }
 
@@ -277,6 +341,8 @@
     document.getElementById("fExtraImagesCurrentUrls").value = "";
     selectedImageFile = null;
     selectedExtraImageFiles = [];
+    variants = [];
+    renderVariants();
     const mainPreview = document.getElementById("mainImagePreview");
     if (mainPreview) mainPreview.innerHTML = "";
     const extraPreview = document.getElementById("extraImagesPreview");
@@ -349,6 +415,17 @@
       const oldPriceVal = document.getElementById("fOldPrice").value;
       const lowStockVal = document.getElementById("fLowStockAt").value;
 
+      // الأذواق الصحيحة (بدون أذواق فارغة الاسم)
+      const validVariants = variants.filter((v) => v.name.trim()).map((v) => ({
+        name: v.name.trim(),
+        stock: Number(v.stock) || 0,
+      }));
+
+      // لو فيه أذواق، نحسب المخزون الكلي منهم تلقائياً
+      const totalStock = validVariants.length > 0
+        ? validVariants.reduce((sum, v) => sum + v.stock, 0)
+        : Number(stock);
+
       const productData = {
         name_ar,
         name_fr: document.getElementById("fName_fr").value.trim() || name_ar,
@@ -356,10 +433,11 @@
         cat: document.getElementById("fCategory").value,
         price,
         oldPrice: oldPriceVal ? Number(oldPriceVal) : null,
-        stock: Number(stock),
+        stock: totalStock,
         lowStockAt: lowStockVal ? Number(lowStockVal) : 5,
         img: imgUrl,
         extraImages,
+        variants: validVariants,
         desc_ar: document.getElementById("fDesc_ar").value.trim(),
         desc_fr: document.getElementById("fDesc_fr").value.trim(),
         best: document.getElementById("fBest").checked,
