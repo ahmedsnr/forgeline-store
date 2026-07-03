@@ -102,6 +102,81 @@
       discountBadge.style.display = "none";
     }
 
+    // Variants (أذواق / نكهات)
+    const variantsContainer = document.getElementById("pdpVariants");
+    const hasVariants = Array.isArray(p.variants) && p.variants.length > 0;
+
+    if (variantsContainer) {
+      if (hasVariants) {
+        variantsContainer.style.display = "block";
+        variantsContainer.innerHTML = `
+          <div style="font-size:13px; font-weight:800; color:var(--ink-faint); margin-bottom:10px;">
+            ${lang() === "ar" ? "اختر الذوق / النكهة" : "Choisir le goût / la saveur"}
+          </div>
+          <div style="display:flex; flex-wrap:wrap; gap:8px;" id="variantBtns">
+            ${p.variants.map((v, i) => `
+              <button class="variant-btn ${i === 0 ? "active" : ""}" data-variant-index="${i}"
+                ${v.stock <= 0 ? "disabled style=\"opacity:0.4;\"" : ""}
+                style="padding:9px 16px; border:2px solid ${i === 0 ? "var(--navy-950)" : "var(--silver-200)"}; border-radius:var(--radius-full); font-size:13px; font-weight:700; background:${i === 0 ? "var(--navy-950)" : "transparent"}; color:${i === 0 ? "var(--white)" : "var(--ink)"}; cursor:${v.stock <= 0 ? "not-allowed" : "pointer"}; transition:all 0.2s; touch-action:manipulation;">
+                ${v.name}${v.stock <= 0 ? ` <span style="font-size:10px;">(نفد)</span>` : ""}
+              </button>
+            `).join("")}
+          </div>`;
+
+        // منطق تبديل الأذواق
+        let selectedVariantIndex = 0;
+        variantsContainer.querySelectorAll(".variant-btn").forEach((btn) => {
+          btn.addEventListener("click", () => {
+            if (btn.disabled) return;
+            selectedVariantIndex = Number(btn.getAttribute("data-variant-index"));
+            const selectedVariant = p.variants[selectedVariantIndex];
+
+            // تحديث شكل الأزرار
+            variantsContainer.querySelectorAll(".variant-btn").forEach((b, bi) => {
+              const active = bi === selectedVariantIndex;
+              b.style.borderColor = active ? "var(--navy-950)" : "var(--silver-200)";
+              b.style.background = active ? "var(--navy-950)" : "transparent";
+              b.style.color = active ? "var(--white)" : "var(--ink)";
+            });
+
+            // تحديث المخزون المعروض
+            const variantOos = selectedVariant.stock <= 0;
+            const variantLow = !variantOos && selectedVariant.stock <= (p.lowStockAt || 5);
+            stockEl.className = "pdp-stock " + (variantOos ? "out" : variantLow ? "low" : "in");
+            stockEl.innerHTML = `<span class="pdp-stock-dot"></span> ${variantOos ? "غير متوفر" : `${selectedVariant.stock} متبقي`}`;
+
+            // تحديث زرار الإضافة
+            addBtn.disabled = variantOos;
+            addBtn.innerHTML = variantOos
+              ? "غير متوفر حالياً"
+              : `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> ${lang() === "ar" ? "أضف للسلة" : "Ajouter au panier"}`;
+
+            // تحديث حدث "أضف للسلة" عشان يضيف الذوق المختار مع اسمه
+            addBtn.onclick = () => {
+              if (!currentProduct || variantOos) return;
+              // نضيف للسلة بـ id مركّب (productId + variantIndex) عشان كل ذوق يكون عنصر منفصل
+              const cartId = `${currentProduct.id}__v${selectedVariantIndex}`;
+              // نحتاج نضيف variant info للكارت — نستخدم طريقة مختلفة
+              window.ForgeLine.addToCartWithVariant(currentProduct.id, qty, {
+                index: selectedVariantIndex,
+                name: selectedVariant.name,
+              });
+            };
+          });
+        });
+
+        // addToCartWithVariant
+        if (!window.ForgeLine.addToCartWithVariant) {
+          window.ForgeLine.addToCartWithVariant = (productId, qty, variant) => {
+            window.ForgeLine.addToCart(productId, qty);
+          };
+        }
+
+      } else {
+        variantsContainer.style.display = "none";
+      }
+    }
+
     // Stock
     const stockEl = document.getElementById("pdpStock");
     const oos = p.stock <= 0;
