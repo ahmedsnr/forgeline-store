@@ -1,20 +1,24 @@
 /* ==========================================================================
    FORGELINE — Product & Store Data
-   هذا الملف فيه بيانات المنتجات التجريبية. لاحقاً، هذه البيانات هتتولد
-   تلقائياً من لوحة التحكم وهتتخزن، بس دلوقتي هي بيانات ثابتة للتجربة.
    ========================================================================== */
 
 const CURRENCY = "د.ج";
 
-const CATEGORY_LABELS = {
-  protein:    { ar: "بروتين",          fr: "Protéine" },
-  preworkout: { ar: "قوة وطاقة",        fr: "Pré-workout" },
-  creatine:   { ar: "كرياتين",          fr: "Créatine" },
-  vitamins:   { ar: "فيتامينات ومعادن", fr: "Vitamines" },
-  mass:       { ar: "ضخامة عضلية",      fr: "Mass Gainer" },
-  aminos:     { ar: "أحماض أمينية",     fr: "Acides aminés" },
-  fatburn:    { ar: "حوارق الدهون",     fr: "Brûleur de graisse" },
-};
+/* الفئات الافتراضية — تُستخدم فقط أول مرة (قبل ما يضيف المالك فئاته من لوحة التحكم) */
+const DEFAULT_CATEGORIES = [
+  { id: "protein",    ar: "بروتين",           fr: "Protéine",              icon: "💪" },
+  { id: "preworkout", ar: "قوة وطاقة",         fr: "Pré-workout",           icon: "⚡" },
+  { id: "creatine",   ar: "كرياتين",           fr: "Créatine",              icon: "📈" },
+  { id: "vitamins",   ar: "فيتامينات ومعادن",  fr: "Vitamines",             icon: "🛡️" },
+  { id: "mass",       ar: "ضخامة عضلية",       fr: "Mass Gainer",           icon: "🏋️" },
+  { id: "aminos",     ar: "أحماض أمينية",      fr: "Acides aminés",         icon: "🔬" },
+  { id: "fatburn",    ar: "حوارق الدهون",      fr: "Brûleur de graisse",    icon: "🔥" },
+];
+
+/* متوافق مع الكود القديم اللي بيستخدم CATEGORY_LABELS */
+const CATEGORY_LABELS = Object.fromEntries(
+  DEFAULT_CATEGORIES.map((c) => [c.id, { ar: c.ar, fr: c.fr }])
+);
 
 const PRODUCTS = [
   {
@@ -460,5 +464,64 @@ const Store = {
       console.error("saveSettings failed:", e);
       throw e;
     }
+  },
+
+  /* ---------------- DELIVERY PRICES (قابلة للتعديل من لوحة التحكم) ---------------- */
+  async getDeliveryPrices() {
+    try {
+      const doc = await db.collection("settings").doc("delivery").get();
+      if (doc.exists && doc.data().prices) {
+        return doc.data().prices;
+      }
+      // أول مرة: نزرع الأسعار الافتراضية الموجودة في الكود
+      await this.saveDeliveryPrices(DELIVERY_PRICES);
+      return DELIVERY_PRICES;
+    } catch (e) {
+      console.error("getDeliveryPrices failed:", e);
+      return DELIVERY_PRICES;
+    }
+  },
+  async saveDeliveryPrices(prices) {
+    try {
+      await db.collection("settings").doc("delivery").set({ prices }, { merge: true });
+    } catch (e) {
+      console.error("saveDeliveryPrices failed:", e);
+      throw e;
+    }
+  },
+
+  /* ---------------- CATEGORIES (فئات المنتجات) ---------------- */
+  async getCategories() {
+    try {
+      const snap = await db.collection("categories").orderBy("order").get();
+      if (!snap.empty) return snap.docs.map((d) => d.data());
+      // أول مرة: نزرع الفئات الافتراضية
+      await this.seedCategories();
+      return DEFAULT_CATEGORIES.map((c, i) => ({ ...c, order: i }));
+    } catch (e) {
+      console.error("getCategories failed:", e);
+      return DEFAULT_CATEGORIES.map((c, i) => ({ ...c, order: i }));
+    }
+  },
+  async seedCategories() {
+    const batch = db.batch();
+    DEFAULT_CATEGORIES.forEach((c, i) => {
+      const ref = db.collection("categories").doc(c.id);
+      batch.set(ref, { ...c, order: i });
+    });
+    await batch.commit();
+  },
+  async saveCategory(cat) {
+    await db.collection("categories").doc(cat.id).set(cat);
+  },
+  async deleteCategory(id) {
+    await db.collection("categories").doc(id).delete();
+  },
+  async reorderCategories(list) {
+    const batch = db.batch();
+    list.forEach((cat, i) => {
+      batch.update(db.collection("categories").doc(cat.id), { order: i });
+    });
+    await batch.commit();
   },
 };
