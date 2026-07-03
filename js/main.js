@@ -281,6 +281,7 @@
 
   function productCardHTML(p, activeOffers) {
     const name = lang === "ar" ? p.name_ar : p.name_fr;
+    const hasVariants = Array.isArray(p.variants) && p.variants.length > 0;
     const oos = p.stock <= 0;
     const lowStock = !oos && p.stock <= (p.lowStockAt || 5);
     const offer = offerForProduct(p.id, activeOffers);
@@ -290,6 +291,7 @@
     if (offer) tags += `<span class="tag tag-sale">-${offer.discount}%</span>`;
     else if (p.best) tags += `<span class="tag tag-best">${t("bestsellers_short")}</span>`;
     if (p.isNew) tags += `<span class="tag tag-new">${t("new_short")}</span>`;
+    if (hasVariants) tags += `<span class="tag" style="background:rgba(99,102,241,0.15);color:#6366F1;">${p.variants.length} ${lang === "ar" ? "أذواق" : "saveurs"}</span>`;
 
     return `
     <div class="product-card" data-product-id="${p.id}">
@@ -306,11 +308,17 @@
           <span class="product-price">${fmt(effectivePrice)} <small>${CURRENCY}</small></span>
           ${offer || p.oldPrice ? `<span class="product-price-old">${fmt(p.oldPrice || p.price)}</span>` : ""}
         </div>
-        ${lowStock ? `<div class="product-stock-low">${t("low_stock")} · ${p.stock} ${t("in_stock_left")}</div>` : ""}
-        <button class="product-add" data-action="add" data-id="${p.id}" ${oos ? "disabled" : ""}>
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-          ${t("add_to_cart")}
-        </button>
+        ${lowStock && !hasVariants ? `<div class="product-stock-low">${t("low_stock")} · ${p.stock} ${t("in_stock_left")}</div>` : ""}
+        ${hasVariants
+          ? `<button class="product-add" data-action="choose-variant" data-id="${p.id}">
+               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+               ${lang === "ar" ? "اختر الذوق" : "Choisir le goût"}
+             </button>`
+          : `<button class="product-add" data-action="add" data-id="${p.id}" ${oos ? "disabled" : ""}>
+               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+               ${t("add_to_cart")}
+             </button>`
+        }
       </div>
     </div>`;
   }
@@ -318,6 +326,12 @@
   function bindProductCardEvents(container) {
     container.querySelectorAll('[data-action="add"]').forEach((btn) => {
       btn.addEventListener("click", () => addToCart(btn.getAttribute("data-id"), 1));
+    });
+    // لو المنتج عنده أذواق، يوديه لصفحة المنتج عشان يختار
+    container.querySelectorAll('[data-action="choose-variant"]').forEach((btn) => {
+      btn.addEventListener("click", () => {
+        window.location.href = "product.html?id=" + btn.getAttribute("data-id");
+      });
     });
     container.querySelectorAll('[data-action="quickview"]').forEach((btn) => {
       btn.addEventListener("click", () => {
