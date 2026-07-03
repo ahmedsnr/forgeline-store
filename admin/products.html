@@ -135,11 +135,31 @@
         <div class="field">
           <label>الكمية بالمخزون <span class="req">*</span></label>
           <input type="number" id="fStock" min="0" step="1">
+          <p class="text-faint" style="font-size:11.5px; margin-top:4px;">لو المنتج عنده أذواق، هذا الرقم يمثل المجموع الكلي (أو اتركه صفراً والمخزون هيتحسب تلقائياً من الأذواق)</p>
         </div>
         <div class="field">
           <label>حد تنبيه المخزون المنخفض</label>
           <input type="number" id="fLowStockAt" min="0" step="1" placeholder="5">
         </div>
+      </div>
+
+      <!-- ============================================================
+           أذواق/نكهات المنتج (Variants)
+           ============================================================ -->
+      <div class="field" style="border:1.5px solid var(--silver-200); border-radius:var(--radius-md); padding:18px; margin-bottom:22px;">
+        <label style="font-weight:800; font-size:14px; margin-bottom:6px; display:block;">
+          أذواق / نكهات / أحجام (اختياري)
+        </label>
+        <p class="text-faint" style="font-size:12px; margin-bottom:14px;">
+          مثال: Vanille / Chocolat / Fraise — كل ذوق له مخزون خاص به. لو لا توجد أذواق، اترك هذا القسم فارغاً.
+        </p>
+
+        <div id="variantsList" style="display:flex; flex-direction:column; gap:8px; margin-bottom:14px;"></div>
+
+        <button type="button" id="addVariantBtn" class="btn btn-outline btn-sm">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          إضافة ذوق / نكهة
+        </button>
       </div>
 
       <div class="field">
