@@ -16,8 +16,23 @@
     setupListActions();
     setupFormActions();
     setupImageInputs();
+    loadCategoriesIntoSelect();
     listenToProducts();
   });
+
+  async function loadCategoriesIntoSelect() {
+    try {
+      const categories = await Store.getCategories();
+      const sel = document.getElementById("fCategory");
+      if (!sel) return;
+      const currentVal = sel.value;
+      sel.innerHTML = `<option value="">اختر فئة...</option>` +
+        categories.map((c) => `<option value="${c.id}">${c.ar}</option>`).join("");
+      if (currentVal) sel.value = currentVal;
+    } catch (e) {
+      console.error("loadCategoriesIntoSelect:", e);
+    }
+  }
 
   function fmt(n) { return Number(n || 0).toLocaleString("en-US"); }
 
@@ -124,9 +139,11 @@
   function openEditor(productId) {
     const product = productsCache.find((p) => p.id === productId);
     if (!product) return;
-
     editingId = productId;
-    fillForm(product);
+    // نحمّل الفئات أولاً عشان تكون جاهزة قبل fillForm
+    loadCategoriesIntoSelect().then(() => {
+      fillForm(product);
+    });
     document.getElementById("editorTitle").textContent = "تعديل المنتج";
     showEditorView();
   }
