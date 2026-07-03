@@ -53,20 +53,33 @@
   }
 
   /* ----------------------------------------------------------------------
-     CATEGORY RAIL
+     CATEGORY RAIL (ديناميكي من Firestore)
      ---------------------------------------------------------------------- */
   function setupCategoryRail(initialCat) {
     const rail = document.getElementById("catRail");
     if (!rail) return;
-    const pills = rail.querySelectorAll(".cat-pill");
-    pills.forEach((pill) => {
-      const cat = pill.getAttribute("data-cat");
-      if (cat === (initialCat || "all")) pill.classList.add("active");
-      else pill.classList.remove("active");
 
+    const categories = window.ForgeLine.categories;
+    const lang = window.ForgeLine.lang;
+
+    // ابني الـ pills ديناميكياً من قائمة الفئات
+    rail.innerHTML = `
+      <button class="cat-pill ${!initialCat || initialCat === "all" ? "active" : ""}" data-cat="all">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+        ${lang === "ar" ? "الكل" : "Tout"}
+      </button>
+      ${categories.map((c) => `
+        <button class="cat-pill ${initialCat === c.id ? "active" : ""}" data-cat="${c.id}">
+          ${c.icon ? `<span>${c.icon}</span>` : ""}
+          ${lang === "ar" ? c.ar : c.fr}
+        </button>
+      `).join("")}
+    `;
+
+    rail.querySelectorAll(".cat-pill").forEach((pill) => {
       pill.addEventListener("click", () => {
-        state.cat = cat;
-        pills.forEach((p) => p.classList.remove("active"));
+        state.cat = pill.getAttribute("data-cat");
+        rail.querySelectorAll(".cat-pill").forEach((p) => p.classList.remove("active"));
         pill.classList.add("active");
         applyFilters();
       });
