@@ -14,6 +14,14 @@
   .empty-cart-block { text-align: center; padding: 90px 24px; }
   .empty-cart-block svg { color: var(--silver-200); margin-bottom: 18px; }
 </style>
+<script>
+  /* تطبيق اللغة فوراً لتجنب وميض العربي قبل التحميل */
+  (function() {
+    var l = localStorage.getItem("forgeline_lang") || "ar";
+    document.documentElement.lang = l;
+    document.documentElement.dir = l === "ar" ? "rtl" : "ltr";
+  })();
+</script>
 </head>
 <body>
 
