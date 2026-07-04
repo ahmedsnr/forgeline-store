@@ -613,6 +613,38 @@
   function renderAll() {
     renderCartDrawer();
     if (document.getElementById("bestsellersGrid")) renderHomepage();
+    // صفحة العروض المستقلة
+    if (document.getElementById("offersGrid") && !document.getElementById("bestsellersGrid")) {
+      renderOffersPage();
+    }
+  }
+
+  function renderOffersPage() {
+    const activeOffers = getActiveOffers();
+    const grid = document.getElementById("offersGrid");
+    const noOffers = document.getElementById("noOffersNote");
+    if (!grid) return;
+
+    if (activeOffers.length === 0) {
+      grid.style.display = "none";
+      if (noOffers) noOffers.style.display = "block";
+      return;
+    }
+
+    grid.style.display = "";
+    if (noOffers) noOffers.style.display = "none";
+    grid.innerHTML = activeOffers.map((o) => offerCardHTML(o)).join("");
+
+    grid.querySelectorAll("[data-bundle-offer]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const offer = activeOffers.find((o) => o.id === btn.getAttribute("data-bundle-offer"));
+        if (!offer || !offer.bundleProducts) return;
+        offer.bundleProducts.forEach((item) => addToCart(item.productId, item.qty || 1));
+      });
+    });
+    grid.querySelectorAll("[data-offer-product]").forEach((btn) => {
+      btn.addEventListener("click", () => addToCart(btn.getAttribute("data-offer-product"), 1));
+    });
   }
 
   /* ----------------------------------------------------------------------
