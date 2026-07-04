@@ -138,6 +138,41 @@
   /* ----------------------------------------------------------------------
      CART LOGIC
      ---------------------------------------------------------------------- */
+  function addBundleToCart(offer) {
+    // الباقة تضاف كعنصر واحد بـ id خاص (bundle__offerId) وسعر الباقة الإجمالي
+    const bundleId = `bundle__${offer.id}`;
+    const bundleName = lang === "ar" ? offer.title_ar : offer.title_fr;
+    const firstProd = offer.bundleProducts && offer.bundleProducts[0]
+      ? productsCache.find((p) => p.id === offer.bundleProducts[0].productId)
+      : null;
+
+    // نضيف كـ virtual product في الكاش مؤقتاً عشان السلة تعرضها
+    const virtualProduct = {
+      id: bundleId,
+      name_ar: offer.title_ar,
+      name_fr: offer.title_fr,
+      price: offer.bundlePrice,
+      img: offer.img || (firstProd ? firstProd.img : ""),
+      brand: lang === "ar" ? "باقة تجميعية" : "Pack",
+      isBundle: true,
+    };
+
+    // إضافة للكاش المحلي مؤقتاً عشان الكارت يقدر يعرضها
+    if (!productsCache.find((p) => p.id === bundleId)) {
+      productsCache.push(virtualProduct);
+    }
+
+    const existing = cart.find((c) => c.id === bundleId);
+    if (existing) {
+      existing.qty += 1;
+    } else {
+      cart.push({ id: bundleId, qty: 1 });
+    }
+    Store.saveCart(cart);
+    renderCartDrawer();
+    openCartDrawer();
+  }
+
   function addToCart(productId, qty) {
     qty = qty || 1;
     const existing = cart.find((c) => c.id === productId);
@@ -375,7 +410,8 @@
         const offerId = btn.getAttribute("data-bundle-offer");
         const offer = activeOffers.find((o) => o.id === offerId);
         if (!offer || !offer.bundleProducts) return;
-        offer.bundleProducts.forEach((item) => addToCart(item.productId, item.qty || 1));
+        // نضيف الباقة كعنصر واحد في السلة بسعر الباقة الإجمالي
+        addBundleToCart(offer);
       });
     });
 
@@ -636,7 +672,7 @@
       btn.addEventListener("click", () => {
         const offer = activeOffers.find((o) => o.id === btn.getAttribute("data-bundle-offer"));
         if (!offer || !offer.bundleProducts) return;
-        offer.bundleProducts.forEach((item) => addToCart(item.productId, item.qty || 1));
+        addBundleToCart(offer);
       });
     });
     grid.querySelectorAll("[data-offer-product]").forEach((btn) => {
