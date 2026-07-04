@@ -5,6 +5,14 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>العروض الحصرية | فورجلاين</title>
 <link rel="stylesheet" href="css/style.css">
+<script>
+  /* تطبيق اللغة فوراً لتجنب وميض العربي قبل التحميل */
+  (function() {
+    var l = localStorage.getItem("forgeline_lang") || "ar";
+    document.documentElement.lang = l;
+    document.documentElement.dir = l === "ar" ? "rtl" : "ltr";
+  })();
+</script>
 </head>
 <body>
 
