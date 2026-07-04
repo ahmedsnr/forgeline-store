@@ -129,13 +129,10 @@
   }
 
   function toggleLang() {
-    lang = lang === "ar" ? "fr" : "ar";
-    Store.setLang(lang);
-    applyLang();
-    applySettings();
-    renderAll();
-    // إشارة لـ shop.js و product.js وغيرها عشان يعيدوا الرسم بالترجمة الجديدة
-    document.dispatchEvent(new CustomEvent("forgeline:langchange", { detail: { lang } }));
+    const newLang = lang === "ar" ? "fr" : "ar";
+    Store.setLang(newLang);
+    // إعادة تحميل الصفحة عشان كل شيء يتغير باللغة الجديدة بشكل كامل
+    window.location.reload();
   }
 
   /* ----------------------------------------------------------------------
