@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>العروض الحصرية | فورجلاين</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="site-header" id="siteHeader">
+  <div class="container header-inner">
+    <a href="index.html" class="header-brand">
+      <span class="brand-icon">M</span>
+      <span data-i18n="nav.brand">فورجلاين</span>
+    </a>
+    <nav class="header-nav">
+      <a href="index.html" data-i18n="nav.home">الرئيسية</a>
+      <a href="shop.html" data-i18n="nav.shop">المتجر</a>
+      <a href="offers.html" class="active" data-i18n="nav.offers">العروض</a>
+      <a href="index.html#contact" data-i18n="nav.contact">اتصل بنا</a>
+    </nav>
+    <div class="header-actions">
+      <div class="header-search-wrap">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input type="text" id="headerSearch" data-i18n-ph="search.placeholder" placeholder="ابحث عن منتج أو ماركة...">
+      </div>
+      <button class="lang-switch" id="langSwitch">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+        FR
+      </button>
+      <button class="cart-trigger" id="cartTrigger" aria-label="السلة">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+        <span class="cart-count" id="cartCount" style="display:none;">0</span>
+      </button>
+    </div>
+    <button class="mobile-menu-toggle" id="mobileMenuToggle" aria-label="القائمة">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</header>
+
+<!-- ANNOUNCE BAR -->
+<div class="announce-bar">توصيل مجاني للطلبات فوق 8,000 د.ج 🚚</div>
+
+<!-- MOBILE NAV -->
+<nav class="mobile-nav container" id="mobileNav">
+  <form class="mobile-search" style="position:relative;" onsubmit="event.preventDefault(); var v=document.getElementById('mobileSearch').value.trim(); if(v){window.location.href='shop.html?q='+encodeURIComponent(v);}">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    <input type="text" data-i18n-ph="search.placeholder" placeholder="ابحث عن منتج أو ماركة..." id="mobileSearch">
+  </form>
+  <a href="index.html" data-i18n="nav.home">الرئيسية</a>
+  <a href="shop.html" data-i18n="nav.shop">المتجر</a>
+  <a href="offers.html" data-i18n="nav.offers">العروض</a>
+  <a href="index.html#contact" data-i18n="nav.contact">اتصل بنا</a>
+</nav>
+
+<!-- CART DRAWER -->
+<div class="drawer-overlay" id="drawerOverlay"></div>
+<div class="drawer" id="cartDrawer">
+  <div class="drawer-head">
+    <h3>
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+      <span data-i18n="cart.title">سلة المشتريات</span>
+    </h3>
+    <button id="closeDrawer" aria-label="إغلاق">✕</button>
+  </div>
+  <div class="drawer-body" id="drawerBody"></div>
+  <div class="drawer-foot" id="drawerFoot" style="display:none;">
+    <div class="drawer-subtotal">
+      <span data-i18n="cart.subtotal">المجموع الفرعي</span>
+      <span id="drawerSubtotal"></span>
+    </div>
+    <a href="checkout.html" class="btn btn-primary btn-block" data-i18n="cart.checkout">إتمام الطلب</a>
+  </div>
+</div>
+
+<!-- MAIN CONTENT -->
+<main>
+  <section class="section container">
+    <div class="section-head" style="margin-bottom:40px;">
+      <span class="eyebrow" data-i18n="section.offers.eyebrow">لفترة محدودة</span>
+      <h1 data-i18n="section.offers.title">عروض حصرية</h1>
+    </div>
+
+    <!-- Active offers -->
+    <div id="activeOffersSection">
+      <div class="offer-grid" id="offersGrid">
+        <p class="empty-note" style="grid-column:1/-1;">جاري تحميل العروض...</p>
+      </div>
+    </div>
+
+    <!-- No offers fallback -->
+    <div id="noOffersNote" style="display:none; text-align:center; padding:80px 20px;">
+      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--silver-300)" stroke-width="1.5" style="margin-bottom:16px;"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
+      <h3 style="font-size:20px; margin-bottom:8px;">لا توجد عروض نشطة حالياً</h3>
+      <p style="color:var(--ink-faint); margin-bottom:24px;">تفقّد الصفحة مجدداً قريباً لعروض حصرية جديدة</p>
+      <a href="shop.html" class="btn btn-primary" data-i18n="nav.shop">تصفح المتجر</a>
+    </div>
+  </section>
+</main>
+
+<!-- FOOTER -->
+<footer class="site-footer">
+  <div class="container footer-grid">
+    <div>
+      <a href="index.html" class="footer-brand">
+        <span class="brand-icon">M</span>
+        <span data-i18n="nav.brand">فورجلاين</span>
+      </a>
+      <p data-i18n="footer.about">متجرك الموثوق للمكملات الغذائية الأصلية، نخدمك في الفرع وأونلاين عبر كل ولايات الجزائر.</p>
+    </div>
+    <div>
+      <h4 data-i18n="footer.links">روابط سريعة</h4>
+      <ul>
+        <li><a href="index.html" data-i18n="nav.home">الرئيسية</a></li>
+        <li><a href="shop.html" data-i18n="nav.shop">المتجر</a></li>
+        <li><a href="offers.html" data-i18n="nav.offers">العروض</a></li>
+      </ul>
+    </div>
+    <div>
+      <h4 data-i18n="footer.contact">تواصل معنا</h4>
+      <ul>
+        <li class="footer-contact-item">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+          <span data-i18n="footer.address">ولاية سيدي بلعباس، الجزائر</span>
+        </li>
+      </ul>
+      <ul id="footerPhones" style="margin-top:6px;"></ul>
+      <a href="admin/login.html" class="footer-admin-link">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        <span data-i18n="footer.admin">لوحة تحكم المالك</span>
+      </a>
+    </div>
+  </div>
+  <div class="footer-bottom container">
+    <span data-i18n="footer.copyright">© 2026 فورجلاين — جميع الحقوق محفوظة</span>
+  </div>
+</footer>
+
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+<script src="js/firebase-config.js"></script>
+<script src="js/i18n.js"></script>
+<script src="js/data.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>
