@@ -17,36 +17,52 @@
 <body>
 
 <!-- HEADER -->
-<header class="site-header" id="siteHeader">
-  <div class="container header-inner">
-    <a href="index.html" class="header-brand">
-      <span class="brand-icon">M</span>
+<header class="site-header">
+  <div class="container header-main">
+    <button class="mobile-menu-toggle" id="mobileMenuToggle" aria-label="القائمة">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="4" y1="7" x2="20" y2="7"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="17" x2="20" y2="17"/></svg>
+    </button>
+
+    <a href="index.html" class="brand">
+      <svg width="26" height="26" viewBox="0 0 40 40" fill="none"><path d="M6 32V8h6.5l8 14 8-14H35v24h-6V18l-6.5 11h-1L15 18v14H6z" fill="currentColor"/></svg>
       <span data-i18n="nav.brand">فورجلاين</span>
     </a>
-    <nav class="header-nav">
+
+    <nav class="main-nav">
       <a href="index.html" data-i18n="nav.home">الرئيسية</a>
       <a href="shop.html" data-i18n="nav.shop">المتجر</a>
       <a href="offers.html" class="active" data-i18n="nav.offers">العروض</a>
       <a href="index.html#contact" data-i18n="nav.contact">اتصل بنا</a>
     </nav>
+
     <div class="header-actions">
-      <div class="header-search-wrap">
+      <div class="header-search">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-        <input type="text" id="headerSearch" data-i18n-ph="search.placeholder" placeholder="ابحث عن منتج أو ماركة...">
+        <input type="text" data-i18n-ph="search.placeholder" placeholder="ابحث عن منتج أو ماركة..." id="headerSearch">
       </div>
       <button class="lang-switch" id="langSwitch">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
         FR
       </button>
       <button class="cart-trigger" id="cartTrigger" aria-label="السلة">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
-        <span class="cart-count" id="cartCount" style="display:none;">0</span>
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+        <span class="cart-badge" id="cartBadge" style="display:none;">0</span>
       </button>
     </div>
-    <button class="mobile-menu-toggle" id="mobileMenuToggle" aria-label="القائمة">
-      <span></span><span></span><span></span>
-    </button>
   </div>
+
+  <nav class="mobile-nav container" id="mobileNav">
+    <form class="mobile-search" style="position:relative;" onsubmit="event.preventDefault(); var v=document.getElementById('mobileSearch').value.trim(); if(v){window.location.href='shop.html?q='+encodeURIComponent(v);}">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input type="text" data-i18n-ph="search.placeholder" placeholder="ابحث عن منتج أو ماركة..." id="mobileSearch">
+    </form>
+    <a href="index.html" data-i18n="nav.home">الرئيسية</a>
+    <a href="shop.html">المتجر</a>
+    <a href="offers.html">العروض</a>
+    <a href="index.html#contact">اتصل بنا</a>
+  </nav>
+
+  <div class="announce-bar" data-i18n="announce.text">توصيل مجاني للطلبات فوق 8,000 د.ج 🚚</div>
 </header>
 
 <!-- ANNOUNCE BAR -->
