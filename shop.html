@@ -31,6 +31,14 @@
   }
   .shop-toolbar select:focus { border-color: var(--navy-900); }
 </style>
+<script>
+  /* تطبيق اللغة فوراً لتجنب وميض العربي قبل التحميل */
+  (function() {
+    var l = localStorage.getItem("forgeline_lang") || "ar";
+    document.documentElement.lang = l;
+    document.documentElement.dir = l === "ar" ? "rtl" : "ltr";
+  })();
+</script>
 </head>
 <body>
 
