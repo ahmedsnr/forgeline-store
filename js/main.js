@@ -139,35 +139,43 @@
      CART LOGIC
      ---------------------------------------------------------------------- */
   function addBundleToCart(offer) {
-    // الباقة تضاف كعنصر واحد بـ id خاص (bundle__offerId) وسعر الباقة الإجمالي
+    // الباقة تضاف كعنصر واحد بـ id خاص مع بياناتها مخزّنة في السلة مباشرة
     const bundleId = `bundle__${offer.id}`;
-    const bundleName = lang === "ar" ? offer.title_ar : offer.title_fr;
     const firstProd = offer.bundleProducts && offer.bundleProducts[0]
       ? productsCache.find((p) => p.id === offer.bundleProducts[0].productId)
       : null;
 
-    // نضيف كـ virtual product في الكاش مؤقتاً عشان السلة تعرضها
-    const virtualProduct = {
+    // نخزّن بيانات الباقة في item السلة عشان تبقى حتى بعد reload
+    const bundleCartItem = {
       id: bundleId,
-      name_ar: offer.title_ar,
-      name_fr: offer.title_fr,
-      price: offer.bundlePrice,
-      img: offer.img || (firstProd ? firstProd.img : ""),
-      brand: lang === "ar" ? "باقة تجميعية" : "Pack",
-      isBundle: true,
+      qty: 1,
+      bundleData: {
+        id: bundleId,
+        name_ar: offer.title_ar,
+        name_fr: offer.title_fr,
+        price: offer.bundlePrice,
+        img: offer.img || (firstProd ? firstProd.img : ""),
+        brand_ar: "باقة تجميعية",
+        brand_fr: "Pack",
+        isBundle: true,
+      },
     };
-
-    // إضافة للكاش المحلي مؤقتاً عشان الكارت يقدر يعرضها
-    if (!productsCache.find((p) => p.id === bundleId)) {
-      productsCache.push(virtualProduct);
-    }
 
     const existing = cart.find((c) => c.id === bundleId);
     if (existing) {
       existing.qty += 1;
     } else {
-      cart.push({ id: bundleId, qty: 1 });
+      cart.push(bundleCartItem);
     }
+
+    // نضيف للـ productsCache عشان getCartItems تشتغل
+    if (!productsCache.find((p) => p.id === bundleId)) {
+      productsCache.push({
+        ...bundleCartItem.bundleData,
+        brand: bundleCartItem.bundleData.brand_ar,
+      });
+    }
+
     Store.saveCart(cart);
     renderCartDrawer();
     openCartDrawer();
@@ -201,9 +209,24 @@
   }
 
   function getCartItems() {
-    return cart
-      .map((c) => ({ ...c, product: productsCache.find((p) => p.id === c.id) }))
-      .filter((c) => c.product);
+    return cart.map((c) => {
+      // لو الـ item باقة تجميعية، نستخدم bundleData المخزّنة في السلة
+      if (c.bundleData) {
+        const lang_val = lang;
+        return {
+          ...c,
+          product: {
+            ...c.bundleData,
+            name_ar: c.bundleData.name_ar,
+            name_fr: c.bundleData.name_fr,
+            brand: lang_val === "ar" ? c.bundleData.brand_ar : c.bundleData.brand_fr,
+            price: c.bundleData.price,
+            img: c.bundleData.img,
+          }
+        };
+      }
+      return { ...c, product: productsCache.find((p) => p.id === c.id) };
+    }).filter((c) => c.product);
   }
 
   function getCartCount() {
