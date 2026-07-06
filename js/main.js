@@ -346,7 +346,7 @@
     if (offer) tags += `<span class="tag tag-sale">-${offer.discount}%</span>`;
     else if (p.best) tags += `<span class="tag tag-best">${t("bestsellers_short")}</span>`;
     if (p.isNew) tags += `<span class="tag tag-new">${t("new_short")}</span>`;
-    if (hasVariants) tags += `<span class="tag" style="background:rgba(99,102,241,0.15);color:#6366F1;">${p.variants.length} ${lang === "ar" ? "أذواق" : "saveurs"}</span>`;
+    // لا نعرض عدد الأذواق على بطاقة المنتج
 
     return `
     <div class="product-card" data-product-id="${p.id}">
