@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>العروض الحصرية | فورجلاين</title>
-<meta name="description" content="تصفح كل منتجات فورجلاين للمكملات الغذائية الأصلية.">
+<meta name="description" content="عروض حصرية على المكملات الغذائية - فورجلاين.">
 <link rel="stylesheet" href="css/style.css">
 <style>
   .shop-layout { display: grid; grid-template-columns: 260px 1fr; gap: 36px; align-items: start; }
@@ -250,7 +250,6 @@
 <script src="js/firebase-config.js"></script>
 <script src="js/data.js"></script>
 <script src="js/main.js"></script>
-<script src="js/shop.js"></script>
 </body>
 </html><main>
   <section class="section container">
@@ -267,6 +266,9 @@
   </section>
 </main>
 
+<!-- ============================================================
+     FOOTER
+     ============================================================ -->
 <footer class="site-footer" id="contact">
   <div class="container footer-grid">
     <div>
@@ -302,9 +304,42 @@
   <div class="footer-bottom" data-i18n="footer.copyright">© 2026 فورجلاين — جميع الحقوق محفوظة</div>
 </footer>
 
+<!-- ============================================================
+     CART DRAWER
+     ============================================================ -->
+<div class="drawer-overlay" id="drawerOverlay"></div>
+<aside class="drawer" id="cartDrawer">
+  <div class="drawer-head">
+    <h3>
+      <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+      سلة المشتريات
+    </h3>
+    <button class="btn-icon" id="closeDrawer" aria-label="إغلاق">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+  </div>
+  <div class="drawer-body" id="drawerBody">
+    <div class="drawer-empty">
+      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+      <strong data-i18n="cart.empty.title">سلتك فارغة حالياً</strong>
+      <span class="text-faint" data-i18n="cart.empty.sub">أضف منتجات لتبدأ طلبك</span>
+    </div>
+  </div>
+  <div class="drawer-foot" id="drawerFoot" style="display:none;">
+    <div class="drawer-subtotal">
+      <span data-i18n="cart.subtotal">المجموع الفرعي</span>
+      <span id="drawerSubtotal">0 د.ج</span>
+    </div>
+    <a href="checkout.html" class="btn btn-primary btn-block" data-i18n="cart.checkout">إتمام الطلب</a>
+  </div>
+</aside>
+
+<!-- Firebase SDK (نسخة compat — تعمل مباشرة بدون أدوات بناء) -->
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
 <script src="js/i18n.js"></script>
 <script src="js/firebase-config.js"></script>
 <script src="js/data.js"></script>
 <script src="js/main.js"></script>
 </body>
+</html>
