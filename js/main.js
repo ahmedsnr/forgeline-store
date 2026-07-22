@@ -472,7 +472,7 @@
       <div class="offer-card offer-card-bundle">
         <img src="${imgUrl}" alt="">
         <div class="offer-content">
-          <span class="offer-discount">${savings > 0 ? `-${savingsPct}%` : "باقة"}</span>
+          <span class="offer-discount">${savings > 0 ? `-${savingsPct}%` : (lang === "fr" ? "Pack" : "باقة")}</span>
           <span class="bundle-badge">${lang === "fr" ? "Pack" : lang === "fr" ? "Pack" : "باقة تجميعية"}</span>
           <h3>${lang === "ar" ? o.title_ar : o.title_fr}</h3>
           <p class="bundle-products-line">${productNames}</p>
