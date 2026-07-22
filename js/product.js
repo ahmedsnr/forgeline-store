@@ -143,15 +143,15 @@
             const variantOos = selectedVariant.stock <= 0;
             const variantLow = !variantOos && selectedVariant.stock <= (p.lowStockAt || 5);
             stockEl.className = "pdp-stock " + (variantOos ? "out" : variantLow ? "low" : "in");
-            stockEl.innerHTML = `<span class="pdp-stock-dot"></span> ${variantOos ? "غير متوفر" : `${selectedVariant.stock} متبقي`}`;
+            stockEl.innerHTML = `<span class="pdp-stock-dot"></span> ${variantOos ? (window.ForgeLine && window.ForgeLine.lang === "fr" ? "Rupture de stock" : "غير متوفر") : selectedVariant.stock + " " + (window.ForgeLine && window.ForgeLine.lang === "fr" ? "restant(s)" : "متبقي")}`;
 
             // تحديث زرار الإضافة
             addBtn.disabled = variantOos;
             addBtn.innerHTML = variantOos
-              ? "غير متوفر حالياً"
-              : `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> ${lang() === "ar" ? "أضف للسلة" : "Ajouter au panier"}`;
-
-            // تحديث حدث "أضف للسلة" عشان يضيف الذوق المختار مع اسمه
+            const _isFr = window.ForgeLine && window.ForgeLine.lang === "fr";
+            addBtn.innerHTML = variantOos
+              ? (_isFr ? "Actuellement indisponible" : "غير متوفر حالياً")
+              : '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> ' + (_isFr ? "Ajouter au panier" : "أضف للسلة");
             addBtn.onclick = () => {
               if (!currentProduct || variantOos) return;
               // نضيف للسلة بـ id مركّب (productId + variantIndex) عشان كل ذوق يكون عنصر منفصل
@@ -182,7 +182,7 @@
     const oos = p.stock <= 0;
     const low = !oos && p.stock <= (p.lowStockAt || 5);
     stockEl.className = "pdp-stock " + (oos ? "out" : low ? "low" : "in");
-    stockEl.innerHTML = `<span class="pdp-stock-dot"></span> ${oos ? "غير متوفر" : `${p.stock} متبقي بالمخزون`}`;
+    stockEl.innerHTML = `<span class="pdp-stock-dot"></span> ${oos ? window.ForgeLine && window.ForgeLine.lang === "fr" ? "Rupture de stock" : "غير متوفر" : `${p.stock} ${window.ForgeLine && window.ForgeLine.lang === "fr" ? "restant(s)" : "متبقي بالمخزون"}`}`;
 
     // Description
     document.getElementById("pdpDesc").textContent = desc || "";
@@ -196,7 +196,7 @@
     const qtyRow = document.getElementById("pdpQtyRow");
     if (oos) {
       addBtn.disabled = true;
-      addBtn.innerHTML = "غير متوفر حالياً";
+      addBtn.innerHTML = (_isFr ? "Actuellement indisponible" : "غير متوفر حالياً");
       qtyRow.style.display = "none";
     }
   }
