@@ -243,6 +243,33 @@
     }
   }
 
+  /* عرض الصور الإضافية الموجودة مع زرار حذف لكل صورة */
+  function renderExistingExtraImages(urls) {
+    const container = document.getElementById("extraImagesPreview");
+    if (!container) return;
+    container.innerHTML = urls.map((url, i) => `
+      <div style="position:relative;display:inline-block;margin:4px;">
+        <img src="${url}" alt="" style="width:72px;height:72px;object-fit:cover;border-radius:8px;display:block;">
+        <button type="button" data-del-extra="${i}"
+          style="position:absolute;top:-6px;inset-inline-end:-6px;width:20px;height:20px;
+                 background:var(--danger);color:#fff;border-radius:50%;font-size:12px;
+                 display:flex;align-items:center;justify-content:center;cursor:pointer;border:none;line-height:1;">✕</button>
+      </div>
+    `).join("");
+
+    // ربط أزرار الحذف
+    container.querySelectorAll("[data-del-extra]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const idx = Number(btn.getAttribute("data-del-extra"));
+        const currentUrls = document.getElementById("fExtraImagesCurrentUrls").value
+          .split(",").map(s => s.trim()).filter(Boolean);
+        currentUrls.splice(idx, 1);
+        document.getElementById("fExtraImagesCurrentUrls").value = currentUrls.join(",");
+        renderExistingExtraImages(currentUrls);
+      });
+    });
+  }
+
   function showImagePreview(containerId, file, fallbackUrl) {
     const container = document.getElementById(containerId);
     if (!container) return;
@@ -327,9 +354,7 @@
     showImagePreview("mainImagePreview", null, p.img || "");
     const extraContainer = document.getElementById("extraImagesPreview");
     if (extraContainer) {
-      extraContainer.innerHTML = (p.extraImages || [])
-        .map((url) => `<img src="${url}" alt="" style="width:60px;height:60px;object-fit:cover;border-radius:8px;">`)
-        .join("");
+      renderExistingExtraImages(p.extraImages || []);
     }
     hideFormError();
   }
@@ -407,9 +432,11 @@
         : [];
       if (selectedExtraImageFiles.length > 0) {
         submitBtn.textContent = "جاري رفع الصور الإضافية...";
-        extraImages = await Promise.all(
+        const newExtraUrls = await Promise.all(
           selectedExtraImageFiles.map((file) => uploadImageToStorage(file, "products"))
         );
+        // نضيف الصور الجديدة للقديمة بدل ما نستبدلها
+        extraImages = [...extraImages, ...newExtraUrls];
       }
 
       const oldPriceVal = document.getElementById("fOldPrice").value;
