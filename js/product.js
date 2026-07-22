@@ -143,7 +143,7 @@
             const variantOos = selectedVariant.stock <= 0;
             const variantLow = !variantOos && selectedVariant.stock <= (p.lowStockAt || 5);
             stockEl.className = "pdp-stock " + (variantOos ? "out" : variantLow ? "low" : "in");
-            stockEl.innerHTML = `<span class="pdp-stock-dot"></span> ${variantOos ? (window.ForgeLine && window.ForgeLine.lang === "fr" ? "Rupture de stock" : "غير متوفر") : selectedVariant.stock + " " + (window.ForgeLine && window.ForgeLine.lang === "fr" ? "restant(s)" : "متبقي")}`;
+            stockEl.innerHTML = `<span class="pdp-stock-dot"></span> ${variantOos ? (window.ForgeLine && window.ForgeLine.lang === "fr" ? "Rupture de stock" : "غير متوفر") : (window.ForgeLine && window.ForgeLine.lang === "fr" ? "En stock" : "متوفر")}`;
 
             // تحديث زرار الإضافة
             addBtn.disabled = variantOos;
@@ -182,7 +182,7 @@
     const oos = p.stock <= 0;
     const low = !oos && p.stock <= (p.lowStockAt || 5);
     stockEl.className = "pdp-stock " + (oos ? "out" : low ? "low" : "in");
-    stockEl.innerHTML = `<span class="pdp-stock-dot"></span> ${oos ? window.ForgeLine && window.ForgeLine.lang === "fr" ? "Rupture de stock" : "غير متوفر" : `${p.stock} ${window.ForgeLine && window.ForgeLine.lang === "fr" ? "restant(s)" : "متبقي بالمخزون"}`}`;
+    stockEl.innerHTML = `<span class="pdp-stock-dot"></span> ${oos ? window.ForgeLine && window.ForgeLine.lang === "fr" ? "Rupture de stock" : "غير متوفر" : (window.ForgeLine && window.ForgeLine.lang === "fr" ? "En stock" : "متوفر")}`;
 
     // Description
     document.getElementById("pdpDesc").textContent = desc || "";
