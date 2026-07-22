@@ -327,6 +327,8 @@
 
   // إعادة رسم المنتجات عند تغيير اللغة
   document.addEventListener("forgeline:langchange", () => {
+    // إعادة بناء pills الفئات باللغة الجديدة
+    setupCategoryRail(state.cat);
     applyFilters();
     // تحديث عناوين الفئات
     const catRail = document.getElementById("catRail");
