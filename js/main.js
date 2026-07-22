@@ -156,7 +156,7 @@
         name_fr: offer.title_fr,
         price: offer.bundlePrice,
         img: offer.img || (firstProd ? firstProd.img : ""),
-        brand_ar: "باقة تجميعية",
+        brand_ar: lang === "fr" ? "Pack" : "باقة تجميعية",
         brand_fr: "Pack",
         isBundle: true,
       },
@@ -473,7 +473,7 @@
         <img src="${imgUrl}" alt="">
         <div class="offer-content">
           <span class="offer-discount">${savings > 0 ? `-${savingsPct}%` : "باقة"}</span>
-          <span class="bundle-badge">${lang === "ar" ? "باقة تجميعية" : "Pack"}</span>
+          <span class="bundle-badge">${lang === "fr" ? "Pack" : lang === "fr" ? "Pack" : "باقة تجميعية"}</span>
           <h3>${lang === "ar" ? o.title_ar : o.title_fr}</h3>
           <p class="bundle-products-line">${productNames}</p>
           <div class="bundle-price-row">
