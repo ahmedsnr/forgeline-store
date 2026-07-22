@@ -515,7 +515,12 @@ const Store = {
     await db.collection("categories").doc(cat.id).set(cat);
   },
   async deleteCategory(id) {
-    await db.collection("categories").doc(id).delete();
+    // حذف الفئة وكل فئاتها الفرعية
+    const batch = db.batch();
+    batch.delete(db.collection("categories").doc(id));
+    const subs = await db.collection("subcategories").where("parentId", "==", id).get();
+    subs.forEach(doc => batch.delete(doc.ref));
+    await batch.commit();
   },
   async reorderCategories(list) {
     const batch = db.batch();
@@ -523,5 +528,25 @@ const Store = {
       batch.update(db.collection("categories").doc(cat.id), { order: i });
     });
     await batch.commit();
+  },
+
+  /* ---------------- SUB-CATEGORIES (فئات فرعية) ---------------- */
+  async getSubcategories(parentId) {
+    try {
+      const snap = await db.collection("subcategories")
+        .where("parentId", "==", parentId)
+        .orderBy("order")
+        .get();
+      return snap.docs.map(d => d.data());
+    } catch (e) {
+      console.error("getSubcategories failed:", e);
+      return [];
+    }
+  },
+  async saveSubcategory(sub) {
+    await db.collection("subcategories").doc(sub.id).set(sub);
+  },
+  async deleteSubcategory(id) {
+    await db.collection("subcategories").doc(id).delete();
   },
 };
