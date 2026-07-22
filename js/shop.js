@@ -11,6 +11,7 @@
 
   let state = {
     cat: "all",
+    subcat: "all", // الفئة الفرعية المختارة
     brands: new Set(),
     maxPrice: 30000,
     sort: "default",
@@ -214,6 +215,7 @@
     let list = window.ForgeLine.products;
 
     if (state.cat !== "all") list = list.filter((p) => p.cat === state.cat);
+    if (state.subcat !== "all") list = list.filter((p) => p.subcat === state.subcat);
     if (state.brands.size > 0) list = list.filter((p) => state.brands.has(p.brand));
     list = list.filter((p) => p.price <= state.maxPrice);
 
