@@ -232,6 +232,9 @@ function applyTranslations(lang) {
         // أضف text node جديد
         el.appendChild(document.createTextNode(val));
       }
+    } else if (el.tagName === "H1" || el.tagName === "H2") {
+      // للعناوين: نحافظ على الـ <br> tags
+      el.innerHTML = val.replace(/\n/g, '<br>');
     } else {
       el.textContent = val;
     }
