@@ -107,6 +107,7 @@
   };
   function t(key) { return UI[lang][key] || key; }
   function fmt(n) { return Number(n || 0).toLocaleString("en-US"); }
+  function currency() { return lang === "ar" ? "د.ج" : "DZD"; }
 
   /* ----------------------------------------------------------------------
      LANGUAGE
@@ -273,7 +274,7 @@
         <img src="${item.product.img}" alt="">
         <div class="cart-line-info">
           <div class="cart-line-name">${lang === "ar" ? item.product.name_ar : item.product.name_fr}</div>
-          <div class="cart-line-price">${fmt(item.product.price)} ${CURRENCY}</div>
+          <div class="cart-line-price">${fmt(item.product.price)} ${currency()}</div>
           <div class="cart-line-controls">
             <button class="qty-btn" data-action="dec" data-id="${item.id}">−</button>
             <span class="qty-value">${item.qty}</span>
@@ -283,14 +284,14 @@
             </button>
           </div>
         </div>
-        <div class="cart-line-total">${fmt(item.product.price * item.qty)} ${CURRENCY}</div>
+        <div class="cart-line-total">${fmt(item.product.price * item.qty)} ${currency()}</div>
       </div>`
       )
       .join("");
 
     if (foot) {
       foot.style.display = "block";
-      if (subtotalEl) subtotalEl.textContent = `${fmt(getCartSubtotal())} ${CURRENCY}`;
+      if (subtotalEl) subtotalEl.textContent = `${fmt(getCartSubtotal())} ${currency()}`;
     }
 
     body.querySelectorAll("[data-action]").forEach((btn) => {
@@ -360,7 +361,7 @@
         <div class="product-brand">${p.brand}</div>
         <div class="product-name">${name}</div>
         <div class="product-price-row">
-          <span class="product-price">${fmt(effectivePrice)} <small>${CURRENCY}</small></span>
+          <span class="product-price">${fmt(effectivePrice)} <small>${currency()}</small></span>
           ${offer || p.oldPrice ? `<span class="product-price-old">${fmt(p.oldPrice || p.price)}</span>` : ""}
         </div>
         ${lowStock && !hasVariants ? `<div class="product-stock-low">${t("low_stock")} · ${p.stock} ${t("in_stock_left")}</div>` : ""}
@@ -476,7 +477,7 @@
           <h3>${lang === "ar" ? o.title_ar : o.title_fr}</h3>
           <p class="bundle-products-line">${productNames}</p>
           <div class="bundle-price-row">
-            <span class="bundle-price">${fmt(o.bundlePrice)} ${CURRENCY}</span>
+            <span class="bundle-price">${fmt(o.bundlePrice)} ${currency()}</span>
             ${originalTotal > 0 ? `<span class="bundle-original">${fmt(originalTotal)}</span>` : ""}
           </div>
           <div class="offer-end">${t("offer_ends")} ${new Date(o.end).toLocaleDateString()}</div>
@@ -577,7 +578,7 @@
           <div style="font-size:11.5px;color:#8995A6;">${p.brand}</div>
         </div>
         <div style="font-size:13px;font-weight:800;white-space:nowrap;color:#0A1F3D;">
-          ${fmt(p.price)} <span style="font-size:10px;font-weight:700;color:#8995A6;">${CURRENCY}</span>
+          ${fmt(p.price)} <span style="font-size:10px;font-weight:700;color:#8995A6;">${currency()}</span>
         </div>
       </div>`).join("") +
       `<div data-search-all style="
