@@ -241,7 +241,7 @@
     window.ForgeLine.renderGrid("shopGrid", list);
 
     const countEl = document.getElementById("resultsCount");
-    if (countEl) countEl.textContent = `(${list.length} منتج)`;
+    if (countEl) countEl.textContent = `(${list.length} ${window.ForgeLine && window.ForgeLine.lang === "fr" ? "produits" : "منتج"})`;
 
     // اقتراحات البحث
     renderSearchSuggestions(liveQuery, list);
