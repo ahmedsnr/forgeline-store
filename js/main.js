@@ -708,10 +708,11 @@
      INIT
      ---------------------------------------------------------------------- */
   document.addEventListener("DOMContentLoaded", async () => {
-    applyLang();
+    applyLang(); // تطبيق اللغة فوراً على العناصر الموجودة
     wireGlobalUI();
     await refreshDataCache();
     renderAll();
+    applyLang(); // تطبيق مرة ثانية بعد تحميل البيانات عشان العناصر الديناميكية تتترجم
     // إشارة لباقي السكريبتات (shop.js, product.js, checkout.js) إن البيانات بقت جاهزة
     document.dispatchEvent(new CustomEvent("forgeline:ready"));
   });
