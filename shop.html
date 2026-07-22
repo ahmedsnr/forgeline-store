@@ -102,7 +102,7 @@
 
   <div class="section-head">
     <div>
-      <span class="eyebrow">كل ما تحتاجه</span>
+      <span class="eyebrow" data-i18n="section.categories.eyebrow">كل ما تحتاجه</span>
       <h2 data-i18n="section.all.title">كل المنتجات</h2>
     </div>
     <span class="section-count" id="resultsCount"></span>
@@ -128,24 +128,24 @@
          FILTERS SIDEBAR
          ============================================================ -->
     <aside class="filters-panel" id="filtersPanel">
-      <h4>نطاق السعر</h4>
+      <h4 data-i18n="filter.price">نطاق السعر</h4>
       <div class="filter-block">
         <div class="filter-range-value" id="priceRangeLabel">0 — 30,000 د.ج</div>
         <input type="range" id="priceRange" min="0" max="30000" step="500" value="30000" style="width:100%;">
       </div>
 
-      <h4>الماركة</h4>
+      <h4 data-i18n="filter.brand">الماركة</h4>
       <div class="filter-block">
         <div class="filter-checks" id="brandChecks"></div>
       </div>
 
-      <h4>الترتيب</h4>
+      <h4 data-i18n="shop.sort">الترتيب</h4>
       <div class="filter-block">
         <select id="sortSelectMobile" style="width:100%; padding:10px; border:1.5px solid var(--silver-200); border-radius:8px;">
-          <option value="default">الأكثر صلة</option>
-          <option value="price_asc">السعر: من الأقل</option>
-          <option value="price_desc">السعر: من الأعلى</option>
-          <option value="newest">الأحدث</option>
+          <option value="default" data-i18n="sort.default">الأكثر صلة</option>
+          <option value="price_asc" data-i18n="sort.price_asc">السعر: من الأقل</option>
+          <option value="price_desc" data-i18n="sort.price_desc">السعر: من الأعلى</option>
+          <option value="newest" data-i18n="sort.newest">الأحدث</option>
         </select>
       </div>
 
