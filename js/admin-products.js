@@ -81,17 +81,39 @@
     return String(str || "").replace(/"/g, "&quot;");
   }
 
-  async function loadCategoriesIntoSelect() {
+  async function loadCategoriesIntoSelect(selectedCat) {
     try {
       const categories = await Store.getCategories();
       const sel = document.getElementById("fCategory");
       if (!sel) return;
-      const currentVal = sel.value;
       sel.innerHTML = `<option value="">اختر فئة...</option>` +
         categories.map((c) => `<option value="${c.id}">${c.ar}</option>`).join("");
-      if (currentVal) sel.value = currentVal;
+      if (selectedCat) sel.value = selectedCat;
+
+      // تحديث الفئات الفرعية عند تغيير الفئة الرئيسية
+      sel.addEventListener("change", () => loadSubcategoriesIntoSelect(sel.value, ""));
+      if (selectedCat) await loadSubcategoriesIntoSelect(selectedCat, "");
     } catch (e) {
       console.error("loadCategoriesIntoSelect:", e);
+    }
+  }
+
+  async function loadSubcategoriesIntoSelect(catId, selectedSub) {
+    const subSel = document.getElementById("fSubcategory");
+    if (!subSel) return;
+    subSel.innerHTML = `<option value="">بدون فئة فرعية</option>`;
+    if (!catId) return;
+    try {
+      const subs = await Store.getSubcategories(catId);
+      subs.forEach(s => {
+        const opt = document.createElement("option");
+        opt.value = s.id;
+        opt.textContent = s.ar;
+        subSel.appendChild(opt);
+      });
+      if (selectedSub) subSel.value = selectedSub;
+    } catch (e) {
+      console.error("loadSubcategoriesIntoSelect:", e);
     }
   }
 
@@ -202,7 +224,7 @@
     if (!product) return;
     editingId = productId;
     // نحمّل الفئات أولاً عشان تكون جاهزة قبل fillForm
-    loadCategoriesIntoSelect().then(() => {
+    loadCategoriesIntoSelect(product.cat).then(() => {
       fillForm(product);
     });
     document.getElementById("editorTitle").textContent = "تعديل المنتج";
@@ -342,6 +364,10 @@
     document.getElementById("fDesc_fr").value = p.desc_fr || "";
     document.getElementById("fBest").checked = !!p.best;
     document.getElementById("fNew").checked = !!p.isNew;
+    // تحميل الفئة الفرعية
+    if (p.subcat) {
+      loadSubcategoriesIntoSelect(p.cat, p.subcat);
+    }
 
     // تحميل الأذواق
     variants = Array.isArray(p.variants) ? p.variants.map((v) => ({ ...v })) : [];
@@ -458,6 +484,7 @@
         name_fr: document.getElementById("fName_fr").value.trim() || name_ar,
         brand,
         cat: document.getElementById("fCategory").value,
+        subcat: document.getElementById("fSubcategory")?.value || "",
         price,
         oldPrice: oldPriceVal ? Number(oldPriceVal) : null,
         stock: totalStock,
