@@ -364,7 +364,12 @@
     document.getElementById("fBest").checked = !!p.best;
     document.getElementById("fNew").checked = !!p.isNew;
     // تحميل الفئة الفرعية
-    loadSubcategoriesIntoSelect(p.cat || "", p.subcat || "");
+    if (p.cat) {
+      loadSubcats(p.cat).then(() => {
+        const subSel = document.getElementById("fSubcategory");
+        if (subSel && p.subcat) subSel.value = p.subcat;
+      });
+    }
 
     // تحميل الأذواق
     variants = Array.isArray(p.variants) ? p.variants.map((v) => ({ ...v })) : [];
