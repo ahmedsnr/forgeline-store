@@ -20,6 +20,14 @@
     setupVariants();
     loadCategoriesIntoSelect();
     listenToProducts();
+
+    // listener لتغيير الفئة الرئيسية → تحميل الفئات الفرعية
+    const catSel = document.getElementById("fCategory");
+    if (catSel) {
+      catSel.addEventListener("change", function() {
+        window.loadSubcats(this.value);
+      });
+    }
   });
 
   /* ----------------------------------------------------------------------
@@ -105,13 +113,16 @@
 
   // دالة عامة قابلة للاستخدام من onchange في HTML
   window.loadSubcats = async function(catId) {
+    console.log("loadSubcats called with:", catId);
     const subSel = document.getElementById("fSubcategory");
-    if (!subSel) return;
+    if (!subSel) { console.log("fSubcategory not found!"); return; }
     subSel.innerHTML = `<option value="">بدون فئة فرعية</option>`;
     if (!catId) return;
     try {
+      console.log("calling Store.getSubcategories...");
       const subs = await Store.getSubcategories(catId);
-      if (!subs || subs.length === 0) return;
+      console.log("subs returned:", subs);
+      if (!subs || subs.length === 0) { console.log("no subs found"); return; }
       subs.forEach(s => {
         const opt = document.createElement("option");
         opt.value = s.id;
