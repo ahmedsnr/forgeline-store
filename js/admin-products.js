@@ -113,16 +113,13 @@
 
   // دالة عامة قابلة للاستخدام من onchange في HTML
   window.loadSubcats = async function(catId) {
-    console.log("loadSubcats called with:", catId);
     const subSel = document.getElementById("fSubcategory");
-    if (!subSel) { console.log("fSubcategory not found!"); return; }
+    if (!subSel) return;
     subSel.innerHTML = `<option value="">بدون فئة فرعية</option>`;
     if (!catId) return;
     try {
-      console.log("calling Store.getSubcategories...");
       const subs = await Store.getSubcategories(catId);
-      console.log("subs returned:", subs);
-      if (!subs || subs.length === 0) { console.log("no subs found"); return; }
+      if (!subs || subs.length === 0) return;
       subs.forEach(s => {
         const opt = document.createElement("option");
         opt.value = s.id;
