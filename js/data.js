@@ -535,9 +535,10 @@ const Store = {
     try {
       const snap = await db.collection("subcategories")
         .where("parentId", "==", parentId)
-        .orderBy("order")
         .get();
-      return snap.docs.map(d => d.data());
+      // ترتيب محلي بدون orderBy عشان ما يحتاج Firebase Index
+      const docs = snap.docs.map(d => d.data());
+      return docs.sort((a, b) => (a.order || 0) - (b.order || 0));
     } catch (e) {
       console.error("getSubcategories failed:", e);
       return [];
