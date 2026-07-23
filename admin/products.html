@@ -118,6 +118,13 @@
             <option value="">جاري التحميل...</option>
           </select>
         </div>
+        <div class="field">
+          <label>الفئة الفرعية (اختياري)</label>
+          <select id="fSubcategory">
+            <option value="">بدون فئة فرعية</option>
+          </select>
+          <p class="text-faint" style="font-size:11.5px;margin-top:4px;">تظهر للزبون عند الضغط على الفئة الرئيسية</p>
+        </div>
       </div>
 
       <div class="field-row">
@@ -221,5 +228,22 @@
 <script src="../js/data.js"></script>
 <script src="../js/admin.js"></script>
 <script src="../js/admin-products.js"></script>
+<script>
+async function loadSubcats(catId) {
+  const subSel = document.getElementById("fSubcategory");
+  if (!subSel) return;
+  subSel.innerHTML = '<option value="">بدون فئة فرعية</option>';
+  if (!catId) return;
+  try {
+    const subs = await Store.getSubcategories(catId);
+    subs.forEach(s => {
+      const opt = document.createElement("option");
+      opt.value = s.id;
+      opt.textContent = s.ar;
+      subSel.appendChild(opt);
+    });
+  } catch(e) { console.error(e); }
+}
+</script>
 </body>
 </html>
