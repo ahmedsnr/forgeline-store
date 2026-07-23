@@ -84,7 +84,7 @@
   <div id="checkoutContent">
     <a href="shop.html" class="breadcrumb" style="text-decoration:none;">
       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="flip-x"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
-      متابعة التسوق
+      <span data-i18n="cart.continue">متابعة التسوق</span>
     </a>
 
     <div class="section-head" style="margin-top:8px;">
@@ -98,12 +98,13 @@
 
         <div class="field-row">
           <div class="field" id="field-name">
-            <label>الاسم الكامل <span class="req">*</span></label>
+            <label data-i18n="checkout.name">الاسم الكامل</label>
+            <label style="display:none;"><span class="req">*</span></label>
             <input type="text" id="custName" autocomplete="name">
             <div class="field-error-msg" id="error-name" style="display:none;"></div>
           </div>
           <div class="field" id="field-phone">
-            <label>رقم الهاتف <span class="req">*</span></label>
+            <label data-i18n="checkout.phone">رقم الهاتف <span class="req">*</span></label>
             <input type="tel" id="custPhone" autocomplete="tel" placeholder="05XX XX XX XX">
             <div class="field-error-msg" id="error-phone" style="display:none;"></div>
           </div>
@@ -111,14 +112,14 @@
 
         <div class="field-row">
           <div class="field" id="field-wilaya">
-            <label>الولاية <span class="req">*</span></label>
+            <label data-i18n="checkout.wilaya">الولاية <span class="req">*</span></label>
             <select id="custWilaya">
-              <option value="">اختر الولاية...</option>
+              <option value="" data-i18n="checkout.select">اختر الولاية...</option>
             </select>
             <div class="field-error-msg" id="error-wilaya" style="display:none;"></div>
           </div>
           <div class="field" id="field-commune">
-            <label>البلدية <span class="req">*</span></label>
+            <label data-i18n="checkout.commune">البلدية <span class="req">*</span></label>
             <input type="text" id="custCommune" placeholder="اكتب البلدية باللغة العربية">
             <div class="field-error-msg" id="error-commune" style="display:none;"></div>
           </div>
@@ -129,11 +130,11 @@
           <div class="choice-row">
             <button type="button" class="choice-card selected" id="deliveryHomeBtn" data-delivery="home">
               <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-              توصيل للمنزل
+              <span data-i18n="checkout.home">توصيل للمنزل</span>
             </button>
             <button type="button" class="choice-card" id="deliveryOfficeBtn" data-delivery="office">
               <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/></svg>
-              مكتب التوصيل
+              <span data-i18n="checkout.office">مكتب التوصيل</span>
             </button>
           </div>
         </div>
@@ -148,12 +149,12 @@
           <div class="payment-radio"></div>
           <div>
             <strong data-i18n="checkout.cod">الدفع عند الاستلام (نقداً)</strong>
-            <small>تدفع المبلغ كاش عند استلام طلبك من المندوب</small>
+            <small data-i18n="checkout.cod.desc">تدفع المبلغ كاش عند استلام طلبك من المندوب</small>
           </div>
         </div>
 
         <button type="submit" class="btn btn-primary btn-block" style="margin-top:28px; padding:17px;" id="submitOrderBtn">
-          تأكيد الطلب
+          <span data-i18n="checkout.confirm">تأكيد الطلب</span>
         </button>
       </form>
 
@@ -178,7 +179,7 @@
       <svg width="38" height="38" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
     </div>
     <h1 style="font-size: clamp(24px,3vw,30px); margin-bottom:10px;" data-i18n="success.title">تم استلام طلبك بنجاح!</h1>
-    <p class="text-faint">سيتصل بك فريقنا قريباً لتأكيد الطلب والتوصيل.</p>
+    <p class="text-faint" data-i18n="success.sub">سيتصل بك فريقنا قريباً لتأكيد الطلب والتوصيل.</p>
     <div class="success-order-box">
       <div class="text-faint" style="font-size:12.5px; margin-bottom:6px;" data-i18n="success.order">رقم الطلب</div>
       <div class="success-order-id" id="successOrderId">—</div>
@@ -231,7 +232,7 @@
   <div class="drawer-head">
     <h3>
       <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
-      سلة المشتريات
+      <span data-i18n="cart.title">سلة المشتريات</span>
     </h3>
     <button class="btn-icon" id="closeDrawer" aria-label="إغلاق">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
@@ -240,7 +241,7 @@
   <div class="drawer-body" id="drawerBody">
     <div class="drawer-empty">
       <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
-      <strong>سلتك فارغة حالياً</strong>
+      <strong data-i18n="cart.empty.title">سلتك فارغة حالياً</strong>
       <span class="text-faint" data-i18n="cart.empty.sub">أضف منتجات لتبدأ طلبك</span>
     </div>
   </div>
