@@ -179,6 +179,7 @@
 
     Store.saveCart(cart);
     renderCartDrawer();
+    if (window.applyTranslations) window.applyTranslations(lang);
     openCartDrawer();
   }
 
@@ -309,6 +310,7 @@
   function openCartDrawer() {
     const drawer = document.getElementById("cartDrawer");
     if (!drawer) return;
+    if (window.applyTranslations) window.applyTranslations(lang);
     // نحدد اتجاه السلة حسب اللغة الحالية
     if (lang === "ar") {
       drawer.classList.add("drawer-rtl");
