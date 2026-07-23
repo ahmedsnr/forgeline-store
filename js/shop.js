@@ -78,13 +78,66 @@
     `;
 
     rail.querySelectorAll(".cat-pill").forEach((pill) => {
-      pill.addEventListener("click", () => {
-        state.cat = pill.getAttribute("data-cat");
+      pill.addEventListener("click", async () => {
+        const catId = pill.getAttribute("data-cat");
+        state.cat = catId;
+        state.subcat = "all";
         rail.querySelectorAll(".cat-pill").forEach((p) => p.classList.remove("active"));
         pill.classList.add("active");
+        await renderSubcatRail(catId);
         applyFilters();
       });
     });
+
+    // لو في فئة مختارة من البداية، نحمّل فئاتها الفرعية
+    if (initialCat && initialCat !== "all") {
+      renderSubcatRail(initialCat);
+    }
+  }
+
+  async function renderSubcatRail(catId) {
+    const subcatRail = document.getElementById("subcatRail");
+    if (!subcatRail) return;
+
+    if (!catId || catId === "all") {
+      subcatRail.style.display = "none";
+      subcatRail.innerHTML = "";
+      return;
+    }
+
+    try {
+      const subs = await window.ForgeLine.getSubcategories(catId);
+      if (!subs || subs.length === 0) {
+        subcatRail.style.display = "none";
+        subcatRail.innerHTML = "";
+        return;
+      }
+
+      const lang = window.ForgeLine.lang;
+      subcatRail.innerHTML = `
+        <button class="cat-pill active" data-subcat="all" style="font-size:12px;padding:8px 14px;">
+          ${lang === "ar" ? "الكل" : "Tout"}
+        </button>
+        ${subs.map(s => `
+          <button class="cat-pill" data-subcat="${s.id}" style="font-size:12px;padding:8px 14px;">
+            ${s.icon ? `<span>${s.icon}</span>` : ""}
+            ${lang === "ar" ? s.ar : s.fr}
+          </button>
+        `).join("")}
+      `;
+      subcatRail.style.display = "flex";
+
+      subcatRail.querySelectorAll("[data-subcat]").forEach(pill => {
+        pill.addEventListener("click", () => {
+          state.subcat = pill.getAttribute("data-subcat");
+          subcatRail.querySelectorAll("[data-subcat]").forEach(p => p.classList.remove("active"));
+          pill.classList.add("active");
+          applyFilters();
+        });
+      });
+    } catch(e) {
+      console.error("renderSubcatRail:", e);
+    }
   }
 
   /* ----------------------------------------------------------------------
