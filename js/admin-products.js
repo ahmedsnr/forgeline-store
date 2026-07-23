@@ -98,23 +98,30 @@
   }
 
   async function loadSubcategoriesIntoSelect(catId, selectedSub) {
+    await loadSubcats(catId);
+    const subSel = document.getElementById("fSubcategory");
+    if (subSel && selectedSub) subSel.value = selectedSub;
+  }
+
+  // دالة عامة قابلة للاستخدام من onchange في HTML
+  window.loadSubcats = async function(catId) {
     const subSel = document.getElementById("fSubcategory");
     if (!subSel) return;
     subSel.innerHTML = `<option value="">بدون فئة فرعية</option>`;
     if (!catId) return;
     try {
       const subs = await Store.getSubcategories(catId);
+      if (!subs || subs.length === 0) return;
       subs.forEach(s => {
         const opt = document.createElement("option");
         opt.value = s.id;
-        opt.textContent = s.ar;
+        opt.textContent = `${s.icon || ""} ${s.ar}`.trim();
         subSel.appendChild(opt);
       });
-      if (selectedSub) subSel.value = selectedSub;
     } catch (e) {
-      console.error("loadSubcategoriesIntoSelect:", e);
+      console.error("loadSubcats:", e);
     }
-  }
+  };
 
   function fmt(n) { return Number(n || 0).toLocaleString("en-US"); }
 
