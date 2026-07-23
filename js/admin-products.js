@@ -88,11 +88,10 @@
       if (!sel) return;
       sel.innerHTML = `<option value="">اختر فئة...</option>` +
         categories.map((c) => `<option value="${c.id}">${c.ar}</option>`).join("");
-      if (selectedCat) sel.value = selectedCat;
-
-      // تحديث الفئات الفرعية عند تغيير الفئة الرئيسية
-      sel.addEventListener("change", () => loadSubcategoriesIntoSelect(sel.value, ""));
-      if (selectedCat) await loadSubcategoriesIntoSelect(selectedCat, "");
+      if (selectedCat) {
+        sel.value = selectedCat;
+        await loadSubcategoriesIntoSelect(selectedCat, "");
+      }
     } catch (e) {
       console.error("loadCategoriesIntoSelect:", e);
     }
@@ -365,9 +364,7 @@
     document.getElementById("fBest").checked = !!p.best;
     document.getElementById("fNew").checked = !!p.isNew;
     // تحميل الفئة الفرعية
-    if (p.subcat) {
-      loadSubcategoriesIntoSelect(p.cat, p.subcat);
-    }
+    loadSubcategoriesIntoSelect(p.cat || "", p.subcat || "");
 
     // تحميل الأذواق
     variants = Array.isArray(p.variants) ? p.variants.map((v) => ({ ...v })) : [];
