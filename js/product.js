@@ -111,7 +111,7 @@
         variantsContainer.style.display = "block";
         variantsContainer.innerHTML = `
           <div style="font-size:13px; font-weight:800; color:var(--ink-faint); margin-bottom:10px;">
-            ${lang() === "ar" ? "اختر الذوق / النكهة" : "Choisir le goût / la saveur"}
+            ${lang() === "ar" ? (window.ForgeLine && window.ForgeLine.lang === "fr" ? "Choisir le goût / la saveur" : "اختر الذوق / النكهة") : "Choisir le goût / la saveur"}
           </div>
           <div style="display:flex; flex-wrap:wrap; gap:8px;" id="variantBtns">
             ${p.variants.map((v, i) => `
@@ -151,7 +151,7 @@
             const _isFr = window.ForgeLine && window.ForgeLine.lang === "fr";
             addBtn.innerHTML = variantOos
               ? (_isFr ? "Actuellement indisponible" : "غير متوفر حالياً")
-              : '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> ' + (_isFr ? "Ajouter au panier" : "أضف للسلة");
+              : '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> ' + (_isFr ? "Ajouter au panier" : (window.ForgeLine && window.ForgeLine.lang === "fr" ? "Ajouter au panier" : "أضف للسلة"));
             addBtn.onclick = () => {
               if (!currentProduct || variantOos) return;
               // نضيف للسلة بـ id مركّب (productId + variantIndex) عشان كل ذوق يكون عنصر منفصل
