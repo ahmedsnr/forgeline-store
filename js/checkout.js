@@ -4,6 +4,9 @@
 
 (function () {
   "use strict";
+  function currency() {
+    return window.ForgeLine && window.ForgeLine.lang === "fr" ? "DZD" : "د.ج";
+  }
 
   const FREE_DELIVERY_THRESHOLD = 8000;
 
@@ -113,22 +116,22 @@
           <div class="summary-line-name">${item.product.name_ar}</div>
           <div class="summary-line-qty">×${item.qty}</div>
         </div>
-        <div class="summary-line-total">${fmt(item.product.price * item.qty)} ${CURRENCY}</div>
+        <div class="summary-line-total">${fmt(item.product.price * item.qty)} ${currency()}</div>
       </div>`
       )
       .join("");
 
     const { subtotal, deliveryFee, total } = calcTotals();
-    document.getElementById("summarySubtotal").textContent = fmt(subtotal) + " " + CURRENCY;
+    document.getElementById("summarySubtotal").textContent = fmt(subtotal) + " " + currency();
     const deliveryEl = document.getElementById("summaryDelivery");
     if (deliveryFee === null) {
       deliveryEl.textContent = "اختر الولاية أولاً";
     } else if (deliveryFee === 0) {
       deliveryEl.textContent = "مجاني";
     } else {
-      deliveryEl.textContent = fmt(deliveryFee) + " " + CURRENCY;
+      deliveryEl.textContent = fmt(deliveryFee) + " " + currency();
     }
-    document.getElementById("summaryTotal").textContent = fmt(total) + " " + CURRENCY;
+    document.getElementById("summaryTotal").textContent = fmt(total) + " " + currency();
   }
 
   /* ----------------------------------------------------------------------
@@ -246,7 +249,7 @@
     document.getElementById("checkoutContent").style.display = "none";
     document.getElementById("successState").style.display = "block";
     document.getElementById("successOrderId").textContent = order.id;
-    document.getElementById("successOrderTotal").textContent = fmt(order.total) + " " + CURRENCY;
+    document.getElementById("successOrderTotal").textContent = fmt(order.total) + " " + currency();
     window.scrollTo({ top: 0, behavior: "smooth" });
     window.ForgeLine.renderCartDrawer();
   }
