@@ -723,6 +723,7 @@
     get products() { return productsCache; },
     get offers() { return offersCache; },
     get categories() { return categoriesCache; },
+    getSubcategories: (catId) => Store.getSubcategories(catId),
     refreshDataCache,
     t, fmt,
     addToCart, updateCartQty, removeFromCart,
