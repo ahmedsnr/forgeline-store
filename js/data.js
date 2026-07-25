@@ -281,27 +281,7 @@ const Store = {
   _seeded: false,
 
   /* تتأكد إن فيه بيانات أولية في Firestore أول مرة (مرة واحدة بس) */
-  async _ensureSeeded() {
-    if (this._seeded) return;
-    this._seeded = true;
-    try {
-      const snapshot = await db.collection(this.COLLECTIONS.products).limit(1).get();
-      if (snapshot.empty) {
-        const batch = db.batch();
-        PRODUCTS.forEach((p) => {
-          const ref = db.collection(this.COLLECTIONS.products).doc(p.id);
-          batch.set(ref, p);
-        });
-        OFFERS.forEach((o) => {
-          const ref = db.collection(this.COLLECTIONS.offers).doc(o.id);
-          batch.set(ref, o);
-        });
-        await batch.commit();
-      }
-    } catch (e) {
-      console.error("Firestore seeding failed:", e);
-    }
-  },
+  // _ensureSeeded removed — لا نعيد زرع البيانات تلقائياً
 
   /* ---------------- PRODUCTS ---------------- */
   async getProducts() {
@@ -343,7 +323,6 @@ const Store = {
 
   /* ---------------- OFFERS ---------------- */
   async getOffers() {
-    await this._ensureSeeded();
     try {
       const snapshot = await db.collection(this.COLLECTIONS.offers).get();
       return snapshot.docs.map((doc) => doc.data());
