@@ -305,14 +305,13 @@ const Store = {
 
   /* ---------------- PRODUCTS ---------------- */
   async getProducts() {
-    await this._ensureSeeded();
     try {
       const snapshot = await db.collection(this.COLLECTIONS.products).get();
-      if (snapshot.empty) return PRODUCTS;
+      // لا نرجع PRODUCTS الافتراضية - لو Firestore فارغ نرجع array فارغة
       return snapshot.docs.map((doc) => doc.data());
     } catch (e) {
       console.error("getProducts failed:", e);
-      return PRODUCTS;
+      return [];
     }
   },
   async saveProducts(list) {
