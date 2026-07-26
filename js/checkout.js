@@ -41,8 +41,16 @@
     if (!select) return;
     WILAYAS_DATA.forEach((w) => {
       const opt = document.createElement("option");
-      opt.value = w.name; // القيمة المخزنة في الطلب تبقى الاسم فقط (للتوافق مع DELIVERY_PRICES)
-      opt.textContent = `${w.code.toString().padStart(2, "0")} - ${w.name}`;
+      opt.value = w.name;
+      const prices = DELIVERY_PRICES[w.name];
+      const unavailable = prices && prices.office === 0 && prices.home === 0;
+      if (unavailable) {
+        opt.textContent = `${w.code.toString().padStart(2, "0")} - ${w.name} (توصيل غير متوفر)`;
+        opt.disabled = true;
+        opt.style.color = "#aaa";
+      } else {
+        opt.textContent = `${w.code.toString().padStart(2, "0")} - ${w.name}`;
+      }
       select.appendChild(opt);
     });
   }
@@ -95,10 +103,8 @@
       deliveryFee = 0;
     } else if (wilayaPrice === null) {
       deliveryFee = null; // لسه محتاج يختار ولاية
-    } else if (subtotal >= FREE_DELIVERY_THRESHOLD) {
-      deliveryFee = 0;
     } else {
-      deliveryFee = wilayaPrice;
+      deliveryFee = wilayaPrice; // دائماً يُحسب سعر التوصيل بدون استثناء
     }
     const total = subtotal + (deliveryFee || 0);
     return { subtotal, deliveryFee, total };
@@ -127,7 +133,7 @@
     if (deliveryFee === null) {
       deliveryEl.textContent = "اختر الولاية أولاً";
     } else if (deliveryFee === 0) {
-      deliveryEl.textContent = "مجاني";
+      deliveryEl.textContent = lang === "fr" ? "Gratuit" : "مجاني";
     } else {
       deliveryEl.textContent = fmt(deliveryFee) + " " + currency();
     }
