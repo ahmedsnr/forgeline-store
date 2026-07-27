@@ -201,7 +201,7 @@ const DELIVERY_PRICES = {
   "تلمسان": { office: 450, home: 850 },
   "تيارت": { office: 500, home: 850 },
   "تيزي وزو": { office: 450, home: 850 },
-  "الجزائر": { office: 450, home: 700 },
+  "الجزائر العاصمة": { office: 450, home: 700 },
   "الجلفة": { office: 600, home: 900 },
   "جيجل": { office: 500, home: 850 },
   "سطيف": { office: 450, home: 850 },
@@ -240,7 +240,7 @@ const DELIVERY_PRICES = {
   "بني عباس": { office: 1100, home: 1400 },
   "عين صالح": { office: 1100, home: 1400 },
   "عين قزام": { office: 1700, home: 2000 },
-  "توقرت": { office: 800, home: 1100 },
+  "تقرت": { office: 800, home: 1100 },
   "جانت": { office: 1700, home: 2000 },
   "المغير": { office: 800, home: 1100 },
   "المنيعة": { office: 1000, home: 1300 },
@@ -286,13 +286,30 @@ const Store = {
   /* ---------------- PRODUCTS ---------------- */
   async getProducts() {
     try {
+      // Cache لمدة 30 دقيقة لتقليل قراءات Firebase
+      const CACHE_KEY = "cache_products";
+      const CACHE_TTL = 30 * 60 * 1000; // 30 دقيقة
+      const cached = localStorage.getItem(CACHE_KEY);
+      if (cached) {
+        const { data, ts } = JSON.parse(cached);
+        if (Date.now() - ts < CACHE_TTL) return data;
+      }
       const snapshot = await db.collection(this.COLLECTIONS.products).get();
-      // لا نرجع PRODUCTS الافتراضية - لو Firestore فارغ نرجع array فارغة
-      return snapshot.docs.map((doc) => doc.data());
+      const data = snapshot.docs.map((doc) => doc.data());
+      localStorage.setItem(CACHE_KEY, JSON.stringify({ data, ts: Date.now() }));
+      return data;
     } catch (e) {
       console.error("getProducts failed:", e);
+      // لو Firebase فشل، نرجع الكاش القديم لو موجود
+      const cached = localStorage.getItem("cache_products");
+      if (cached) return JSON.parse(cached).data;
       return [];
     }
+  },
+
+  // مسح الكاش (يتنادى لما المالك يعدل منتج)
+  clearProductsCache() {
+    localStorage.removeItem("cache_products");
   },
   async saveProducts(list) {
     try {
@@ -425,16 +442,25 @@ const Store = {
 
   async getSettings() {
     try {
-      const doc = await db.collection("settings").doc("general").get();
-      if (doc.exists) {
-        return { ...this.DEFAULT_SETTINGS, ...doc.data() };
+      const CACHE_KEY = "cache_settings";
+      const CACHE_TTL = 60 * 60 * 1000; // ساعة كاملة
+      const cached = localStorage.getItem(CACHE_KEY);
+      if (cached) {
+        const { data, ts } = JSON.parse(cached);
+        if (Date.now() - ts < CACHE_TTL) return data;
       }
-      return { ...this.DEFAULT_SETTINGS };
+      const doc = await db.collection("settings").doc("general").get();
+      const data = doc.exists ? { ...this.DEFAULT_SETTINGS, ...doc.data() } : { ...this.DEFAULT_SETTINGS };
+      localStorage.setItem(CACHE_KEY, JSON.stringify({ data, ts: Date.now() }));
+      return data;
     } catch (e) {
       console.error("getSettings failed:", e);
+      const cached = localStorage.getItem("cache_settings");
+      if (cached) return JSON.parse(cached).data;
       return { ...this.DEFAULT_SETTINGS };
     }
   },
+  clearSettingsCache() { localStorage.removeItem("cache_settings"); },
   async saveSettings(settings) {
     try {
       await db.collection("settings").doc("general").set(settings, { merge: true });
@@ -471,16 +497,28 @@ const Store = {
   /* ---------------- CATEGORIES (فئات المنتجات) ---------------- */
   async getCategories() {
     try {
+      const CACHE_KEY = "cache_categories";
+      const CACHE_TTL = 2 * 60 * 60 * 1000; // ساعتين
+      const cached = localStorage.getItem(CACHE_KEY);
+      if (cached) {
+        const { data, ts } = JSON.parse(cached);
+        if (Date.now() - ts < CACHE_TTL) return data;
+      }
       const snap = await db.collection("categories").orderBy("order").get();
-      if (!snap.empty) return snap.docs.map((d) => d.data());
-      // أول مرة: نزرع الفئات الافتراضية
-      await this.seedCategories();
-      return DEFAULT_CATEGORIES.map((c, i) => ({ ...c, order: i }));
+      const data = !snap.empty
+        ? snap.docs.map((d) => d.data())
+        : DEFAULT_CATEGORIES.map((c, i) => ({ ...c, order: i }));
+      if (snap.empty) await this.seedCategories();
+      localStorage.setItem(CACHE_KEY, JSON.stringify({ data, ts: Date.now() }));
+      return data;
     } catch (e) {
       console.error("getCategories failed:", e);
+      const cached = localStorage.getItem("cache_categories");
+      if (cached) return JSON.parse(cached).data;
       return DEFAULT_CATEGORIES.map((c, i) => ({ ...c, order: i }));
     }
   },
+  clearCategoriesCache() { localStorage.removeItem("cache_categories"); },
   async seedCategories() {
     const batch = db.batch();
     DEFAULT_CATEGORIES.forEach((c, i) => {
