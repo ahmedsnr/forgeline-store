@@ -100,7 +100,7 @@
   function orderCardHTML(order) {
     const c = order.customer || {};
     const deliveryTypeLabel = c.deliveryType === "office" ? "مكتب التوصيل" : "توصيل للمنزل";
-    const itemsLine = order.items.map((i) => `${i.name} ×${i.qty}`).join("، ");
+    const itemsLine = order.items.map((i) => `${i.name}${i.variant ? " (" + i.variant + ")" : ""} ×${i.qty}`).join("، ");
 
     return `
     <div class="order-card" data-order-id="${order.id}">
