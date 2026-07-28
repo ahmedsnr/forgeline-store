@@ -207,7 +207,7 @@ const DELIVERY_PRICES = {
   "سطيف": { office: 450, home: 850 },
   "سعيدة": { office: 600, home: 900 },
   "سكيكدة": { office: 500, home: 850 },
-  "سيدي بلعباس": { office: 400, home: 500 },
+  "سيدي بلعباس": { office: 0, home: 500 },
   "عنابة": { office: 500, home: 850 },
   "قالمة": { office: 600, home: 900 },
   "قسنطينة": { office: 450, home: 850 },
