@@ -60,7 +60,7 @@
     if (!select) return;
     select.addEventListener("change", () => {
       selectedWilaya = select.value;
-      renderSummary();
+      updateDeliveryBtns(selectedWilaya);
     });
   }
 
@@ -85,11 +85,37 @@
       renderSummary();
     });
     officeBtn.addEventListener("click", () => {
+      if (officeBtn.disabled) return;
       deliveryType = "office";
       officeBtn.classList.add("selected");
       homeBtn.classList.remove("selected");
       renderSummary();
     });
+  }
+
+  // تحديث أزرار التوصيل حسب الولاية المختارة
+  function updateDeliveryBtns(wilaya) {
+    const officeBtn = document.getElementById("deliveryOfficeBtn");
+    const homeBtn = document.getElementById("deliveryHomeBtn");
+    if (!officeBtn || !homeBtn) return;
+
+    const prices = DELIVERY_PRICES[wilaya];
+    const officeAvailable = prices && prices.office > 0;
+
+    if (!officeAvailable) {
+      // مكتب التوصيل غير متوفر — نعطّله ونختار المنزل تلقائياً
+      officeBtn.disabled = true;
+      officeBtn.style.opacity = "0.4";
+      officeBtn.style.cursor = "not-allowed";
+      officeBtn.classList.remove("selected");
+      deliveryType = "home";
+      homeBtn.classList.add("selected");
+    } else {
+      officeBtn.disabled = false;
+      officeBtn.style.opacity = "";
+      officeBtn.style.cursor = "";
+    }
+    renderSummary();
   }
 
   /* ----------------------------------------------------------------------
