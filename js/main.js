@@ -212,23 +212,28 @@
 
   function getCartItems() {
     return cart.map((c) => {
-      // لو الـ item باقة تجميعية، نستخدم bundleData المخزّنة في السلة
+      // باقة تجميعية
       if (c.bundleData) {
-        const lang_val = lang;
         return {
           ...c,
           product: {
             ...c.bundleData,
             name_ar: c.bundleData.name_ar,
             name_fr: c.bundleData.name_fr,
-            brand: lang_val === "ar" ? c.bundleData.brand_ar : c.bundleData.brand_fr,
+            brand: lang === "ar" ? c.bundleData.brand_ar : c.bundleData.brand_fr,
             price: c.bundleData.price,
             img: c.bundleData.img,
           }
         };
       }
+      // منتج بذوق (id مركّب productId__variantName)
+      if (c.productId) {
+        const prod = productsCache.find((p) => p.id === c.productId);
+        return prod ? { ...c, product: prod } : null;
+      }
+      // منتج عادي
       return { ...c, product: productsCache.find((p) => p.id === c.id) };
-    }).filter((c) => c.product);
+    }).filter((c) => c && c.product);
   }
 
   function getCartCount() {
@@ -275,6 +280,7 @@
         <img src="${item.product.img}" alt="">
         <div class="cart-line-info">
           <div class="cart-line-name">${lang === "ar" ? item.product.name_ar : item.product.name_fr}</div>
+        ${item.variantName ? `<div class="cart-line-variant" style="font-size:11.5px;color:var(--ink-faint);margin-top:2px;">◉ ${item.variantName}</div>` : ""}
           <div class="cart-line-price">${fmt(item.product.price)} ${currency()}</div>
           <div class="cart-line-controls">
             <button class="qty-btn" data-action="dec" data-id="${item.id}">−</button>
@@ -726,6 +732,9 @@
     get offers() { return offersCache; },
     get categories() { return categoriesCache; },
     getSubcategories: (catId) => Store.getSubcategories(catId),
+    getCart: () => cart,
+    reloadCart: () => { cart = Store.getCart(); renderCartDrawer(); },
+    openCartDrawer,
     refreshDataCache,
     t, fmt,
     addToCart, updateCartQty, removeFromCart,
