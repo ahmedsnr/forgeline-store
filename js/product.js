@@ -165,12 +165,29 @@
           });
         });
 
-        // addToCartWithVariant
-        if (!window.ForgeLine.addToCartWithVariant) {
-          window.ForgeLine.addToCartWithVariant = (productId, qty, variant) => {
-            window.ForgeLine.addToCart(productId, qty);
-          };
-        }
+        // addToCartWithVariant - تضيف الذوق مع المنتج في السلة
+        window.ForgeLine.addToCartWithVariant = (productId, qty, variant) => {
+          const cart = window.ForgeLine.getCart ? window.ForgeLine.getCart() : 
+                       JSON.parse(localStorage.getItem("forgeline_cart") || "[]");
+          
+          // نستخدم id مركّب عشان كل ذوق يكون عنصر منفصل في السلة
+          const cartId = `${productId}__${variant.name}`;
+          const existing = cart.find(c => c.id === cartId);
+          if (existing) {
+            existing.qty += qty;
+          } else {
+            cart.push({ 
+              id: cartId,
+              productId: productId,
+              qty: qty,
+              variantName: variant.name // اسم الذوق
+            });
+          }
+          localStorage.setItem("forgeline_cart", JSON.stringify(cart));
+          // نعيد تحميل السلة
+          if (window.ForgeLine.reloadCart) window.ForgeLine.reloadCart();
+          window.ForgeLine.openCartDrawer();
+        };
 
       } else {
         variantsContainer.style.display = "none";
