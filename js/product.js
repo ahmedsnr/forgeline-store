@@ -240,6 +240,9 @@
     if (!btn) return;
     btn.addEventListener("click", () => {
       if (!currentProduct || currentProduct.stock <= 0) return;
+      // لو المنتج عنده أذواق، لا تضيف هنا — addBtn.onclick هو المسؤول
+      const hasVariants = Array.isArray(currentProduct.variants) && currentProduct.variants.length > 0;
+      if (hasVariants) return;
       window.ForgeLine.addToCart(currentProduct.id, qty);
     });
   }
