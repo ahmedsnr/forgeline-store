@@ -219,7 +219,7 @@
     const order = {
       id: "ORD-" + Math.random().toString(36).slice(2, 8).toUpperCase(),
       date: new Date().toISOString(),
-      items: items.map((c) => ({ id: c.id, name: c.product.name_ar, qty: c.qty, price: c.product.price })),
+      items: items.map((c) => ({ id: c.productId || c.id, name: c.product.name_ar, qty: c.qty, price: c.product.price, variant: c.variantName || "" })),
       subtotal, deliveryFee, total,
       customer: customerData,
       status: "new",
