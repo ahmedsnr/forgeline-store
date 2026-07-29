@@ -9,7 +9,7 @@ export default async function handler(req, res) {
   }
 
   const token = process.env.ECOTRACK_TOKEN;
-  const baseUrl = 'https://world-express.ecotrack.dz';
+  const url = 'https://world-express.ecotrack.dz/api/v1/commandes';
 
   const body = {
     tracking: order.orderId,
@@ -24,40 +24,29 @@ export default async function handler(req, res) {
     note: order.notes || '',
   };
 
-  // نجرب كل المسارات الممكنة
-  const paths = [
-    '/api/v1/commandes',
-    '/api/commandes',
-    '/v1/commandes',
-    '/commandes',
-    '/api/v1/orders',
-    '/api/orders',
+  // نجرب 3 طرق مختلفة للـ Token
+  const headerOptions = [
+    { 'X-Authorization': token },
+    { 'Authorization': `Bearer ${token}` },
+    { 'Authorization': token },
   ];
 
-  for (const path of paths) {
-    try {
-      const response = await fetch(`${baseUrl}${path}`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-Authorization': token,
-        },
-        body: JSON.stringify(body),
-      });
+  for (const headers of headerOptions) {
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', ...headers },
+      body: JSON.stringify(body),
+    });
 
-      console.log(`${path} → ${response.status}`);
+    const text = await response.text();
+    console.log(`Headers ${JSON.stringify(Object.keys(headers))} → ${response.status}: ${text.slice(0, 200)}`);
 
-      if (response.status !== 404) {
-        const text = await response.text();
-        console.log(`Response:`, text);
-        let data;
-        try { data = JSON.parse(text); } catch { data = { raw: text }; }
-        return res.status(response.ok ? 200 : response.status).json({ path, status: response.status, data });
-      }
-    } catch (err) {
-      console.log(`${path} → Error: ${err.message}`);
+    if (response.status !== 403 && response.status !== 401) {
+      let data;
+      try { data = JSON.parse(text); } catch { data = { raw: text }; }
+      return res.status(response.ok ? 200 : response.status).json({ success: response.ok, data });
     }
   }
 
-  return res.status(404).json({ error: 'No valid endpoint found', tried: paths });
+  return res.status(403).json({ error: 'Authentication failed — check token' });
 }
