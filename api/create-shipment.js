@@ -9,44 +9,49 @@ export default async function handler(req, res) {
   }
 
   const token = process.env.ECOTRACK_TOKEN;
-  const url = 'https://world-express.ecotrack.dz/api/v1/commandes';
+  const baseUrl = 'https://world-express.ecotrack.dz';
 
-  const body = {
-    tracking: order.orderId,
-    nom: order.name,
-    telephone: order.phone,
-    wilaya: order.wilayaCode,
-    commune: order.commune,
+  // بناء الـ Query Parameters حسب الـ documentation
+  const params = new URLSearchParams({
+    reference: order.orderId || '',
+    nom_client: order.name,
+    telephone: order.phone.replace(/\s/g, '').replace('+213', '0'),
     adresse: order.commune,
-    produit: order.items,
+    commune: order.commune,
+    code_wilaya: order.wilayaCode,
     montant: order.total,
-    type_livraison: order.deliveryType === 'home' ? 1 : 2,
-    note: order.notes || '',
-  };
+    produit: order.items,
+    type: 1, // 1 = Livraison
+    stop_desk: order.deliveryType === 'home' ? 0 : 1,
+    remarque: order.notes || '',
+    stock: 0,
+  });
 
-  // نجرب 3 طرق مختلفة للـ Token
-  const headerOptions = [
-    { 'X-Authorization': token },
-    { 'Authorization': `Bearer ${token}` },
-    { 'Authorization': token },
-  ];
+  const url = `${baseUrl}/api/v1/create/order?${params.toString()}`;
+  console.log("Sending to:", url);
 
-  for (const headers of headerOptions) {
+  try {
     const response = await fetch(url, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', ...headers },
-      body: JSON.stringify(body),
+      headers: {
+        'X-Authorization': token,
+        'Content-Type': 'application/json',
+      },
     });
 
     const text = await response.text();
-    console.log(`Headers ${JSON.stringify(Object.keys(headers))} → ${response.status}: ${text.slice(0, 200)}`);
+    console.log(`Response ${response.status}:`, text.slice(0, 500));
 
-    if (response.status !== 403 && response.status !== 401) {
-      let data;
-      try { data = JSON.parse(text); } catch { data = { raw: text }; }
-      return res.status(response.ok ? 200 : response.status).json({ success: response.ok, data });
+    let data;
+    try { data = JSON.parse(text); } catch { data = { raw: text }; }
+
+    if (response.ok) {
+      return res.status(200).json({ success: true, data });
+    } else {
+      return res.status(response.status).json({ error: data });
     }
+  } catch (error) {
+    console.error('Error:', error.message);
+    return res.status(500).json({ error: error.message });
   }
-
-  return res.status(403).json({ error: 'Authentication failed — check token' });
 }
