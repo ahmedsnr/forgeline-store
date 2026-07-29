@@ -12,7 +12,6 @@ export default async function handler(req, res) {
   const baseUrl = 'https://world-express.ecotrack.dz';
 
   const params = new URLSearchParams({
-    token: token, // Token في الـ params مباشرة
     reference: order.orderId || '',
     nom_client: order.name,
     telephone: order.phone.replace(/\s/g, '').replace('+213', '0'),
@@ -25,18 +24,24 @@ export default async function handler(req, res) {
     stop_desk: order.deliveryType === 'home' ? 0 : 1,
     remarque: order.notes || '',
     stock: 0,
+    boutique: 'Abou El Massakine',
   });
 
   const url = `${baseUrl}/api/v1/create/order?${params.toString()}`;
+  console.log("URL:", url);
 
   try {
     const response = await fetch(url, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      },
     });
 
     const text = await response.text();
-    console.log(`Response ${response.status}:`, text.slice(0, 300));
+    console.log(`Response ${response.status}:`, text.slice(0, 500));
 
     let data;
     try { data = JSON.parse(text); } catch { data = { raw: text }; }
@@ -47,6 +52,7 @@ export default async function handler(req, res) {
       return res.status(response.status).json({ error: data });
     }
   } catch (error) {
+    console.error('Error:', error.message);
     return res.status(500).json({ error: error.message });
   }
 }
