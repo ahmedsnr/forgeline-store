@@ -24,31 +24,40 @@ export default async function handler(req, res) {
     note: order.notes || '',
   };
 
-  console.log("Sending to World Express Ecotrack:", JSON.stringify(body));
+  // نجرب كل المسارات الممكنة
+  const paths = [
+    '/api/v1/commandes',
+    '/api/commandes',
+    '/v1/commandes',
+    '/commandes',
+    '/api/v1/orders',
+    '/api/orders',
+  ];
 
-  try {
-    const response = await fetch(`${baseUrl}/api/v1/commandes`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-Authorization': token,
-      },
-      body: JSON.stringify(body),
-    });
+  for (const path of paths) {
+    try {
+      const response = await fetch(`${baseUrl}${path}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Authorization': token,
+        },
+        body: JSON.stringify(body),
+      });
 
-    const text = await response.text();
-    console.log(`Response ${response.status}:`, text);
+      console.log(`${path} → ${response.status}`);
 
-    let data;
-    try { data = JSON.parse(text); } catch { data = { raw: text }; }
-
-    if (response.ok) {
-      return res.status(200).json({ success: true, data });
-    } else {
-      return res.status(response.status).json({ error: data });
+      if (response.status !== 404) {
+        const text = await response.text();
+        console.log(`Response:`, text);
+        let data;
+        try { data = JSON.parse(text); } catch { data = { raw: text }; }
+        return res.status(response.ok ? 200 : response.status).json({ path, status: response.status, data });
+      }
+    } catch (err) {
+      console.log(`${path} → Error: ${err.message}`);
     }
-  } catch (error) {
-    console.error('Server error:', error.message);
-    return res.status(500).json({ error: error.message });
   }
+
+  return res.status(404).json({ error: 'No valid endpoint found', tried: paths });
 }
