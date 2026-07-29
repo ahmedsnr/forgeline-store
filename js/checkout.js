@@ -271,10 +271,51 @@
     // تحديث الكاش المحلي للمنتجات عشان المخزون يبان صحيح فوراً
     await window.ForgeLine.refreshDataCache();
 
+    // إرسال الطلب لـ Ecotrack/World Express تلقائياً
+    sendToEcotrack(order).catch(err => console.error("Ecotrack error:", err));
+
     // إفراغ السلة
     Store.saveCart([]);
 
     showSuccess(order);
+  }
+
+  async function sendToEcotrack(order) {
+    // رقم الولاية من WILAYAS_DATA
+    const wilayaEntry = WILAYAS_DATA.find(w => w.name === order.customer.wilaya);
+    const wilayaCode = wilayaEntry ? wilayaEntry.code : 22;
+
+    // تجهيز قائمة المنتجات كنص
+    const itemsText = order.items
+      .map(i => `${i.brand ? i.brand + " - " : ""}${i.name}${i.variant ? " (" + i.variant + ")" : ""} x${i.qty}`)
+      .join(", ");
+
+    const payload = {
+      order: {
+        orderId: order.id,
+        name: order.customer.name,
+        phone: order.customer.phone,
+        wilayaCode: wilayaCode,
+        commune: order.customer.commune,
+        items: itemsText,
+        total: order.total,
+        deliveryType: order.customer.deliveryType,
+        notes: order.customer.notes || "",
+      }
+    };
+
+    const res = await fetch("/api/create-shipment", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+
+    if (!res.ok) {
+      const err = await res.json();
+      console.error("Ecotrack failed:", err);
+    } else {
+      console.log("Ecotrack shipment created successfully");
+    }
   }
 
   function showSuccess(order) {
