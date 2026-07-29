@@ -9,13 +9,7 @@ export default async function handler(req, res) {
   }
 
   const token = process.env.ECOTRACK_TOKEN;
-
-  // نجرب أكثر من رابط ممكن لـ Ecotrack
-  const endpoints = [
-    'https://ecotrack.dz/api/v1/commandes',
-    'https://app.ecotrack.dz/api/v1/commandes',
-    'https://api.ecotrack.dz/api/v1/commandes',
-  ];
+  const baseUrl = 'https://world-express.ecotrack.dz';
 
   const body = {
     tracking: order.orderId,
@@ -30,31 +24,31 @@ export default async function handler(req, res) {
     note: order.notes || '',
   };
 
-  console.log("Sending to Ecotrack:", JSON.stringify(body));
-  console.log("Token exists:", !!token);
+  console.log("Sending to World Express Ecotrack:", JSON.stringify(body));
 
-  for (const endpoint of endpoints) {
-    try {
-      const response = await fetch(endpoint, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-Authorization': token,
-          'Authorization': `Bearer ${token}`,
-        },
-        body: JSON.stringify(body),
-      });
+  try {
+    const response = await fetch(`${baseUrl}/api/v1/commandes`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Authorization': token,
+      },
+      body: JSON.stringify(body),
+    });
 
-      const text = await response.text();
-      console.log(`${endpoint} → ${response.status}: ${text}`);
+    const text = await response.text();
+    console.log(`Response ${response.status}:`, text);
 
-      if (response.ok) {
-        return res.status(200).json({ success: true, data: JSON.parse(text) });
-      }
-    } catch (err) {
-      console.log(`${endpoint} → Error: ${err.message}`);
+    let data;
+    try { data = JSON.parse(text); } catch { data = { raw: text }; }
+
+    if (response.ok) {
+      return res.status(200).json({ success: true, data });
+    } else {
+      return res.status(response.status).json({ error: data });
     }
+  } catch (error) {
+    console.error('Server error:', error.message);
+    return res.status(500).json({ error: error.message });
   }
-
-  return res.status(500).json({ error: 'All Ecotrack endpoints failed — check logs' });
 }
