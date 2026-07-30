@@ -61,7 +61,47 @@
     select.addEventListener("change", () => {
       selectedWilaya = select.value;
       updateDeliveryBtns(selectedWilaya);
+      loadCommunes(selectedWilaya);
     });
+  }
+
+  async function loadCommunes(wilayaName) {
+    const communeSelect = document.getElementById("custCommune");
+    if (!communeSelect) return;
+
+    // نجيب رقم الولاية
+    const wilayaEntry = WILAYAS_DATA.find(w => w.name === wilayaName);
+    if (!wilayaEntry) return;
+
+    communeSelect.innerHTML = '<option value="">جاري التحميل...</option>';
+    communeSelect.disabled = true;
+
+    try {
+      const res = await fetch(`/api/get-communes?wilaya_id=${wilayaEntry.code}`);
+      const data = await res.json();
+
+      communeSelect.innerHTML = '<option value="">اختر البلدية...</option>';
+
+      if (Array.isArray(data) && data.length > 0) {
+        data.forEach(c => {
+          const name = c.name || c.commune_name || c.nom || '';
+          if (name) {
+            const opt = document.createElement('option');
+            opt.value = name;
+            opt.textContent = name;
+            communeSelect.appendChild(opt);
+          }
+        });
+        communeSelect.disabled = false;
+      } else {
+        // لو Ecotrack ما عندهاش بلديات، نرجع لحقل نصي
+        communeSelect.outerHTML = '<input type="text" id="custCommune" placeholder="اكتب البلدية">';
+      }
+    } catch (e) {
+      communeSelect.innerHTML = '<option value="">خطأ في التحميل</option>';
+      communeSelect.disabled = false;
+      console.error("loadCommunes error:", e);
+    }
   }
 
   function getDeliveryPriceForWilaya(wilaya, type) {
@@ -271,13 +311,31 @@
     // تحديث الكاش المحلي للمنتجات عشان المخزون يبان صحيح فوراً
     await window.ForgeLine.refreshDataCache();
 
-    // إرسال الطلب لـ Ecotrack/World Express تلقائياً
-    sendToEcotrack(order).catch(err => console.error("Ecotrack error:", err));
+    // إرسال الطلب لـ Ecotrack/World Express تلقائياً مع retry
+    sendToEcotracWithRetry(order);
 
     // إفراغ السلة
     Store.saveCart([]);
 
     showSuccess(order);
+  }
+
+  async function sendToEcotracWithRetry(order, attempt = 1) {
+    try {
+      await sendToEcotrack(order);
+    } catch (err) {
+      console.error(`Ecotrack attempt ${attempt} failed:`, err);
+      if (attempt < 3) {
+        // نحاول مرة أخرى بعد 5 ثواني
+        setTimeout(() => sendToEcotracWithRetry(order, attempt + 1), 5000 * attempt);
+      } else {
+        // بعد 3 محاولات فاشلة، نحفظ في Firebase عشان نعرف إنها لم تُرسل
+        try {
+          await db.collection("orders").doc(order.id).update({ ecotrackFailed: true });
+          console.error("Ecotrack failed after 3 attempts for order:", order.id);
+        } catch (e) {}
+      }
+    }
   }
 
   async function sendToEcotrack(order) {
