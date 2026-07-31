@@ -11,57 +11,24 @@ export default async function handler(req, res) {
   const token = process.env.ECOTRACK_TOKEN;
   const baseUrl = 'https://world-express.ecotrack.dz';
 
-  // نجيب أول بلدية صحيحة من Ecotrack لهذه الولاية
-  let commune = order.commune;
-  try {
-    const communesRes = await fetch(
-      `${baseUrl}/api/v1/get/communes?wilaya_id=${order.wilayaCode}`,
-      { headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' } }
-    );
-    const communesData = await communesRes.json();
-    console.log("Communes for wilaya", order.wilayaCode, ":", JSON.stringify(communesData).slice(0, 500));
+  const sendOrder = async (stopDesk) => {
+    const params = new URLSearchParams({
+      reference: order.orderId || '',
+      nom_client: order.name,
+      telephone: order.phone.replace(/\s/g, '').replace('+213', '0'),
+      adresse: order.commune,
+      commune: order.commune,
+      code_wilaya: order.wilayaCode,
+      montant: order.total,
+      produit: order.items,
+      type: 1,
+      stop_desk: stopDesk,
+      remarque: order.notes || '',
+      stock: 0,
+      boutique: 'Abou El Massakine',
+    });
 
-    // نبحث عن أقرب بلدية لما كتبه الزبون
-    if (communesData && Array.isArray(communesData)) {
-      const customerCommune = order.commune.toLowerCase().trim();
-      const match = communesData.find(c => {
-        const name = (c.name || c.commune_name || c.nom || '').toLowerCase();
-        return name.includes(customerCommune) || customerCommune.includes(name);
-      });
-      if (match) {
-        commune = match.name || match.commune_name || match.nom;
-        console.log("Matched commune:", commune);
-      } else {
-        // نستخدم أول بلدية في الولاية كـ fallback
-        const first = communesData[0];
-        commune = first.name || first.commune_name || first.nom || order.commune;
-        console.log("No match, using first commune:", commune);
-      }
-    }
-  } catch (e) {
-    console.log("Could not fetch communes:", e.message);
-  }
-
-  const params = new URLSearchParams({
-    reference: order.orderId || '',
-    nom_client: order.name,
-    telephone: order.phone.replace(/\s/g, '').replace('+213', '0'),
-    adresse: order.commune,
-    commune: commune,
-    code_wilaya: order.wilayaCode,
-    montant: order.total,
-    produit: order.items,
-    type: 1,
-    stop_desk: order.deliveryType === 'home' ? 0 : 1,
-    remarque: order.notes || '',
-    stock: 0,
-    boutique: 'Abou El Massakine',
-  });
-
-  const url = `${baseUrl}/api/v1/create/order?${params.toString()}`;
-
-  try {
-    const response = await fetch(url, {
+    const response = await fetch(`${baseUrl}/api/v1/create/order?${params.toString()}`, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${token}`,
@@ -71,17 +38,30 @@ export default async function handler(req, res) {
     });
 
     const text = await response.text();
-    console.log(`Response ${response.status}:`, text.slice(0, 500));
-
     let data;
     try { data = JSON.parse(text); } catch { data = { raw: text }; }
+    return { status: response.status, data, ok: response.ok };
+  };
 
-    if (response.ok) {
-      return res.status(200).json({ success: true, data });
+  try {
+    const stopDesk = order.deliveryType === 'home' ? 0 : 1;
+    let result = await sendOrder(stopDesk);
+    console.log(`Attempt 1 (stop_desk=${stopDesk}):`, result.status, JSON.stringify(result.data).slice(0, 200));
+
+    // لو فشل بسبب stop_desk، نجرب بـ توصيل منزل
+    if (!result.ok && result.data?.errors?.stop_desk) {
+      console.log("stop_desk not available, retrying with home delivery...");
+      result = await sendOrder(0);
+      console.log(`Attempt 2 (stop_desk=0):`, result.status, JSON.stringify(result.data).slice(0, 200));
+    }
+
+    if (result.ok) {
+      return res.status(200).json({ success: true, data: result.data });
     } else {
-      return res.status(response.status).json({ error: data });
+      return res.status(result.status).json({ error: result.data });
     }
   } catch (error) {
+    console.error('Error:', error.message);
     return res.status(500).json({ error: error.message });
   }
 }
