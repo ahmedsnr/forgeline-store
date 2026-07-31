@@ -75,6 +75,15 @@
     <button class="status-pill" data-status="cancelled">ملغي</button>
   </div>
 
+  <!-- SEARCH BY PHONE -->
+  <div style="margin-bottom:16px;">
+    <div style="position:relative; max-width:320px;">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--ink-faint)" stroke-width="2" style="position:absolute;top:50%;right:12px;transform:translateY(-50%);pointer-events:none;"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input type="tel" id="phoneSearchInput" placeholder="ابحث برقم الهاتف..."
+        style="width:100%;padding:10px 40px 10px 14px;border:1.5px solid var(--silver-200);border-radius:var(--radius-full);font-size:14px;direction:ltr;text-align:right;">
+    </div>
+  </div>
+
   <!-- ORDERS LIST -->
   <div id="ordersList"></div>
   <p class="empty-note" id="ordersEmptyNote" style="display:none;">لا توجد طلبات بهذه الحالة</p>
