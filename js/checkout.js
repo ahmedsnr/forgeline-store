@@ -89,13 +89,35 @@
             const opt = document.createElement('option');
             opt.value = name;
             opt.textContent = name;
+            // نخزن هل stop_desk متوفر في هذه البلدية
+            opt.setAttribute('data-has-stopdesk', c.has_stop_desk || c.stop_desk || 0);
             communeSelect.appendChild(opt);
           }
         });
         communeSelect.disabled = false;
+
+        // نتحقق من stop_desk عند تغيير البلدية
+        communeSelect.addEventListener('change', () => {
+          const selectedOpt = communeSelect.options[communeSelect.selectedIndex];
+          const hasStopDesk = selectedOpt && selectedOpt.getAttribute('data-has-stopdesk') == '1';
+          const officeBtn = document.getElementById('deliveryOfficeBtn');
+          const homeBtn = document.getElementById('deliveryHomeBtn');
+          if (officeBtn) {
+            if (!hasStopDesk) {
+              officeBtn.style.display = 'none';
+              // نختار التوصيل للمنزل تلقائياً
+              deliveryType = 'home';
+              if (homeBtn) homeBtn.classList.add('selected');
+              officeBtn.classList.remove('selected');
+            } else {
+              officeBtn.style.display = '';
+            }
+          }
+          renderSummary();
+        });
       } else {
-        // لو Ecotrack ما عندهاش بلديات، نرجع لحقل نصي
-        communeSelect.outerHTML = '<input type="text" id="custCommune" placeholder="اكتب البلدية">';
+        communeSelect.innerHTML = '<option value="">اكتب اسم البلدية يدوياً</option>';
+        communeSelect.disabled = false;
       }
     } catch (e) {
       communeSelect.innerHTML = '<option value="">خطأ في التحميل</option>';
