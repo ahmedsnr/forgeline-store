@@ -23,6 +23,10 @@ export default async function handler(req, res) {
     );
 
     const data = await response.json();
+    console.log("Communes sample:", JSON.stringify(data[0] || {}));
+    
+    // Cache لمدة ساعة عشان نقلل قراءات API
+    res.setHeader('Cache-Control', 'public, max-age=3600');
     return res.status(200).json(data);
   } catch (error) {
     return res.status(500).json({ error: error.message });
