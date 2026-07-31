@@ -241,9 +241,17 @@
     if (!phone) { showError("phone", "هذا الحقل مطلوب"); valid = false; }
     else if (!/^[0-9+\s-]{8,15}$/.test(phone)) { showError("phone", "رقم هاتف غير صالح"); valid = false; }
     if (!wilaya) { showError("wilaya", "الرجاء الاختيار"); valid = false; }
-    if (!commune) { showError("commune", "هذا الحقل مطلوب"); valid = false; }
+    if (!commune) {
+      // لو البلديات لم تُحمَّل بعد، نقبل الطلب بدون بلدية محددة
+      const communeEl2 = document.getElementById("custCommune");
+      if (communeEl2 && communeEl2.tagName === "SELECT" && communeEl2.options.length <= 1) {
+        // البلديات لم تُحمَّل — نكمل بدون تحقق
+      } else {
+        showError("commune", "الرجاء اختيار البلدية"); valid = false;
+      }
+    }
 
-    return { valid, data: { name, phone, wilaya, commune, deliveryType, notes: document.getElementById("custNotes").value.trim() } };
+    return { valid, data: { name, phone, wilaya, commune, deliveryType, notes: "" } };
   }
 
   /* ----------------------------------------------------------------------
