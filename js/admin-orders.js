@@ -16,6 +16,7 @@
   };
 
   let currentFilter = "all";
+  let phoneSearch = "";
   let allOrdersCache = [];
   let unsubscribeOrders = null;
 
@@ -81,7 +82,15 @@
      RENDER ORDERS LIST
      ---------------------------------------------------------------------- */
   function render() {
-    const orders = currentFilter === "all" ? allOrdersCache : allOrdersCache.filter((o) => o.status === currentFilter);
+    let orders = currentFilter === "all" ? allOrdersCache : allOrdersCache.filter((o) => o.status === currentFilter);
+    // فلتر رقم الهاتف
+    if (phoneSearch.trim()) {
+      orders = orders.filter((o) => {
+        const phone = (o.customer?.phone || o.phone || "").replace(/\s/g, "");
+        const search = phoneSearch.trim().replace(/\s/g, "");
+        return phone.includes(search);
+      });
+    }
 
     const container = document.getElementById("ordersList");
     const emptyNote = document.getElementById("ordersEmptyNote");
