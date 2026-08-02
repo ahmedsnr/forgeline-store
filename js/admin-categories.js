@@ -178,6 +178,7 @@
         ? (categoriesCache.find(c => c.id === editingCatId)?.order ?? categoriesCache.length)
         : categoriesCache.length;
       await Store.saveCategory({ id, ar, fr, icon, order });
+      if (Store.clearCategoriesCache) Store.clearCategoriesCache();
       await loadCategories();
       document.getElementById("catForm").style.display = "none";
       editingCatId = null; resetCatForm();
@@ -188,7 +189,7 @@
   async function deleteCat(catId) {
     const cat = categoriesCache.find(c => c.id === catId);
     if (!cat || !window.confirm(`حذف "${cat.ar}" وكل فئاتها الفرعية؟`)) return;
-    try { await Store.deleteCategory(catId); await loadCategories(); }
+    try { await Store.deleteCategory(catId); if (Store.clearCategoriesCache) Store.clearCategoriesCache(); await loadCategories(); }
     catch (e) { alert("تعذّر الحذف"); }
   }
 
