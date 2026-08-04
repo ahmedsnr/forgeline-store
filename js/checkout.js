@@ -324,14 +324,14 @@
     // إنقاص المخزون بأمان باستخدام Firestore transaction — يضمن عدم
     // تعارض البيانات لو أكثر من زبون اشترى نفس المنتج بنفس اللحظة.
     await db.runTransaction(async (transaction) => {
-      const productRefs = items.map((c) => db.collection("products").doc(c.id));
+      const productRefs = items.map((c) => db.collection("products").doc(c.productId || c.id));
       const productSnaps = await Promise.all(productRefs.map((ref) => transaction.get(ref)));
 
       productSnaps.forEach((snap, i) => {
         if (!snap.exists) return;
         const currentStock = snap.data().stock || 0;
         const newStock = Math.max(0, currentStock - items[i].qty);
-        transaction.update(productRefs[i], { stock: newStock });
+        if (snap.exists) transaction.update(productRefs[i], { stock: newStock });
       });
 
       const orderRef = db.collection("orders").doc(order.id);
