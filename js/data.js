@@ -341,13 +341,25 @@ const Store = {
   /* ---------------- OFFERS ---------------- */
   async getOffers() {
     try {
+      const CACHE_KEY = "cache_offers";
+      const CACHE_TTL = 30 * 60 * 1000; // 30 دقيقة
+      const cached = localStorage.getItem(CACHE_KEY);
+      if (cached) {
+        const { data, ts } = JSON.parse(cached);
+        if (Date.now() - ts < CACHE_TTL) return data;
+      }
       const snapshot = await db.collection(this.COLLECTIONS.offers).get();
-      return snapshot.docs.map((doc) => doc.data());
+      const data = snapshot.docs.map((doc) => doc.data());
+      localStorage.setItem(CACHE_KEY, JSON.stringify({ data, ts: Date.now() }));
+      return data;
     } catch (e) {
       console.error("getOffers failed:", e);
+      const cached = localStorage.getItem("cache_offers");
+      if (cached) return JSON.parse(cached).data;
       return OFFERS;
     }
   },
+  clearOffersCache() { localStorage.removeItem("cache_offers"); },
   async saveOffers(list) {
     try {
       const batch = db.batch();
@@ -473,18 +485,31 @@ const Store = {
   /* ---------------- DELIVERY PRICES (قابلة للتعديل من لوحة التحكم) ---------------- */
   async getDeliveryPrices() {
     try {
-      const doc = await db.collection("settings").doc("delivery").get();
-      if (doc.exists && doc.data().prices) {
-        return doc.data().prices;
+      const CACHE_KEY = "cache_delivery";
+      const CACHE_TTL = 24 * 60 * 60 * 1000; // 24 ساعة (أسعار التوصيل ما بتتغيرش كثير)
+      const cached = localStorage.getItem(CACHE_KEY);
+      if (cached) {
+        const { data, ts } = JSON.parse(cached);
+        if (Date.now() - ts < CACHE_TTL) return data;
       }
-      // أول مرة: نزرع الأسعار الافتراضية الموجودة في الكود
-      await this.saveDeliveryPrices(DELIVERY_PRICES);
-      return DELIVERY_PRICES;
+      const doc = await db.collection("settings").doc("delivery").get();
+      let data;
+      if (doc.exists && doc.data().prices) {
+        data = doc.data().prices;
+      } else {
+        await this.saveDeliveryPrices(DELIVERY_PRICES);
+        data = DELIVERY_PRICES;
+      }
+      localStorage.setItem(CACHE_KEY, JSON.stringify({ data, ts: Date.now() }));
+      return data;
     } catch (e) {
       console.error("getDeliveryPrices failed:", e);
+      const cached = localStorage.getItem("cache_delivery");
+      if (cached) return JSON.parse(cached).data;
       return DELIVERY_PRICES;
     }
   },
+  clearDeliveryCache() { localStorage.removeItem("cache_delivery"); },
   async saveDeliveryPrices(prices) {
     try {
       await db.collection("settings").doc("delivery").set({ prices }, { merge: true });
