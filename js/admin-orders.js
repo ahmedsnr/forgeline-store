@@ -34,16 +34,19 @@
      أي طلب جديد (من أي جهاز) أو تغيير حالة (من جهاز تاني) بيظهر هنا
      فوراً بدون الحاجة لإعادة تحميل الصفحة.
      ---------------------------------------------------------------------- */
-  function listenToOrders() {
-    unsubscribeOrders = db.collection("orders").orderBy("date", "desc").onSnapshot(
-      (snapshot) => {
+  async function listenToOrders() {
+    const loadOrders = async () => {
+      try {
+        const snapshot = await db.collection("orders").orderBy("date", "desc").get();
         allOrdersCache = snapshot.docs.map((doc) => doc.data());
         render();
-      },
-      (error) => {
+      } catch (error) {
         console.error("listenToOrders failed:", error);
       }
-    );
+    };
+    await loadOrders();
+    // تحديث كل دقيقتين بدل onSnapshot
+    setInterval(loadOrders, 2 * 60 * 1000);
   }
 
   /* ----------------------------------------------------------------------
@@ -85,10 +88,18 @@
     let orders = currentFilter === "all" ? allOrdersCache : allOrdersCache.filter((o) => o.status === currentFilter);
     // فلتر رقم الهاتف
     if (phoneSearch.trim()) {
+      // debug: نطبع شكل الطلب الأول عشان نرى أين الهاتف
+      if (allOrdersCache.length > 0) console.log("Order structure:", JSON.stringify(allOrdersCache[0]).slice(0, 300));
+      const search = phoneSearch.trim().replace(/\s/g, "").replace(/-/g, "");
       orders = orders.filter((o) => {
-        const phone = (o.customer?.phone || o.phone || "").replace(/\s/g, "");
-        const search = phoneSearch.trim().replace(/\s/g, "");
-        return phone.includes(search);
+        // نبحث في كل الأماكن الممكنة
+        const phones = [
+          o.customer?.phone || "",
+          o.phone || "",
+          o.tel || "",
+          o.telephone || "",
+        ].map(p => p.toString().replace(/\s/g, "").replace(/-/g, ""));
+        return phones.some(p => p.includes(search));
       });
     }
 
