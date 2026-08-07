@@ -136,20 +136,21 @@
   /* ----------------------------------------------------------------------
      REAL-TIME PRODUCTS LISTENER
      ---------------------------------------------------------------------- */
-  function listenToProducts() {
-    db.collection("products").onSnapshot(
-      (snapshot) => {
+  async function listenToProducts() {
+    const loadProducts = async () => {
+      try {
+        const snapshot = await db.collection("products").get();
         productsCache = snapshot.docs.map((doc) => doc.data());
-        // نحدّث القائمة فقط لو واجهة القائمة هي الظاهرة حالياً
-        // (مش وإحنا فاتحين نموذج التعديل، عشان ما نقطعش شغل المالك)
         if (document.getElementById("listView").style.display !== "none") {
           renderList();
         }
-      },
-      (error) => {
+      } catch (error) {
         console.error("listenToProducts failed:", error);
       }
-    );
+    };
+    await loadProducts();
+    // تحديث كل 3 دقائق بدل onSnapshot
+    setInterval(loadProducts, 3 * 60 * 1000);
   }
 
   /* ----------------------------------------------------------------------
