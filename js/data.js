@@ -267,6 +267,32 @@ const DEFAULT_DELIVERY_PRICE = { home: 700, office: 550 }; // يُستخدم ف�
    ⚠️ كل دوال المنتجات/العروض/الطلبات بقت async — لازم تستخدم
    await أو .then() معاها في أي مكان بتتنادى فيه.
    ============================================================ */
+// Memory Cache - يعمل في كل المتصفحات بدون قيود
+const MemoryCache = {
+  _store: {},
+  get(key, ttl) {
+    const item = this._store[key];
+    if (!item) return null;
+    if (Date.now() - item.ts > ttl) { delete this._store[key]; return null; }
+    return item.data;
+  },
+  set(key, data) { this._store[key] = { data, ts: Date.now() }; },
+  clear(key) { delete this._store[key]; },
+};
+
+// محاولة localStorage مع fallback لـ MemoryCache
+const SafeStorage = {
+  get(key) {
+    try { return localStorage.getItem(key); } catch { return null; }
+  },
+  set(key, value) {
+    try { localStorage.setItem(key, value); } catch {}
+  },
+  remove(key) {
+    try { localStorage.removeItem(key); } catch {}
+  },
+};
+
 const Store = {
   COLLECTIONS: {
     products: "products",
@@ -289,7 +315,7 @@ const Store = {
       // Cache لمدة 30 دقيقة لتقليل قراءات Firebase
       const CACHE_KEY = "cache_products";
       const CACHE_TTL = 30 * 60 * 1000; // 30 دقيقة
-      const cached = localStorage.getItem(CACHE_KEY);
+      const cached = MemoryCache.get(CACHE_KEY, CACHE_TTL) ? { data: MemoryCache.get(CACHE_KEY, CACHE_TTL) } : null; const _ls = SafeStorage.get(CACHE_KEY);
       if (cached) {
         const { data, ts } = JSON.parse(cached);
         if (Date.now() - ts < CACHE_TTL) return data;
@@ -343,7 +369,7 @@ const Store = {
     try {
       const CACHE_KEY = "cache_offers";
       const CACHE_TTL = 30 * 60 * 1000; // 30 دقيقة
-      const cached = localStorage.getItem(CACHE_KEY);
+      const cached = MemoryCache.get(CACHE_KEY, CACHE_TTL) ? { data: MemoryCache.get(CACHE_KEY, CACHE_TTL) } : null; const _ls = SafeStorage.get(CACHE_KEY);
       if (cached) {
         const { data, ts } = JSON.parse(cached);
         if (Date.now() - ts < CACHE_TTL) return data;
@@ -454,25 +480,23 @@ const Store = {
 
   async getSettings() {
     try {
-      const CACHE_KEY = "cache_settings";
-      const CACHE_TTL = 60 * 60 * 1000; // ساعة كاملة
-      const cached = localStorage.getItem(CACHE_KEY);
-      if (cached) {
-        const { data, ts } = JSON.parse(cached);
-        if (Date.now() - ts < CACHE_TTL) return data;
-      }
+      const TTL = 60 * 60 * 1000;
+      const mem = MemoryCache.get("settings", TTL);
+      if (mem) return mem;
+      const ls = SafeStorage.get("cache_settings");
+      if (ls) { try { const {data,ts}=JSON.parse(ls); if(Date.now()-ts<TTL){MemoryCache.set("settings",data);return data;} } catch {} }
       const doc = await db.collection("settings").doc("general").get();
       const data = doc.exists ? { ...this.DEFAULT_SETTINGS, ...doc.data() } : { ...this.DEFAULT_SETTINGS };
-      localStorage.setItem(CACHE_KEY, JSON.stringify({ data, ts: Date.now() }));
+      MemoryCache.set("settings", data);
+      SafeStorage.set("cache_settings", JSON.stringify({data, ts: Date.now()}));
       return data;
     } catch (e) {
-      console.error("getSettings failed:", e);
-      const cached = localStorage.getItem("cache_settings");
-      if (cached) return JSON.parse(cached).data;
+      const mem = MemoryCache.get("settings", 999999999);
+      if (mem) return mem;
       return { ...this.DEFAULT_SETTINGS };
     }
   },
-  clearSettingsCache() { localStorage.removeItem("cache_settings"); },
+  clearSettingsCache() { MemoryCache.clear("settings"); SafeStorage.remove("cache_settings"); },
   async saveSettings(settings) {
     try {
       await db.collection("settings").doc("general").set(settings, { merge: true });
@@ -487,7 +511,7 @@ const Store = {
     try {
       const CACHE_KEY = "cache_delivery";
       const CACHE_TTL = 24 * 60 * 60 * 1000; // 24 ساعة (أسعار التوصيل ما بتتغيرش كثير)
-      const cached = localStorage.getItem(CACHE_KEY);
+      const cached = MemoryCache.get(CACHE_KEY, CACHE_TTL) ? { data: MemoryCache.get(CACHE_KEY, CACHE_TTL) } : null; const _ls = SafeStorage.get(CACHE_KEY);
       if (cached) {
         const { data, ts } = JSON.parse(cached);
         if (Date.now() - ts < CACHE_TTL) return data;
@@ -524,7 +548,7 @@ const Store = {
     try {
       const CACHE_KEY = "cache_categories";
       const CACHE_TTL = 2 * 60 * 60 * 1000; // ساعتين
-      const cached = localStorage.getItem(CACHE_KEY);
+      const cached = MemoryCache.get(CACHE_KEY, CACHE_TTL) ? { data: MemoryCache.get(CACHE_KEY, CACHE_TTL) } : null; const _ls = SafeStorage.get(CACHE_KEY);
       if (cached) {
         const { data, ts } = JSON.parse(cached);
         if (Date.now() - ts < CACHE_TTL) return data;
