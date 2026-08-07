@@ -120,7 +120,7 @@
   function orderCardHTML(order) {
     const c = order.customer || {};
     const deliveryTypeLabel = c.deliveryType === "office" ? "مكتب التوصيل" : "توصيل للمنزل";
-    const itemsLine = order.items.map((i) => `${i.brand ? i.brand + " — " : ""}${i.name}${i.variant ? " (" + i.variant + ")" : ""} ×${i.qty}`).join("، ");
+    const itemsLine = order.items.map((i) => `• ${i.brand ? i.brand + " — " : ""}${i.name}${i.variant ? " (" + i.variant + ")" : ""} ×${i.qty}`).join("\n");
     const ecotrackWarning = order.ecotrackFailed 
       ? `<span style="background:#FEF3C7;color:#92400E;font-size:11px;padding:3px 8px;border-radius:4px;margin-inline-start:8px;">⚠️ لم يُرسل لـ Ecotrack</span>` 
       : "";
@@ -154,7 +154,7 @@
         </div>
       </div>
 
-      <div class="order-items-line">${escapeHTML(itemsLine)}</div>
+      <div class="order-items-line" style="white-space:pre-line; line-height:1.8;">${escapeHTML(itemsLine)}${ecotrackWarning}</div>
 
       ${c.notes ? `<div class="order-notes">📝 ${escapeHTML(c.notes)}</div>` : ""}
 
