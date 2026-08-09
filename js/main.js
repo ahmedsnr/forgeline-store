@@ -438,8 +438,8 @@
     el.innerHTML = activeOffers.map((o) => offerCardHTML(o)).join("");
     if (discountedProducts.length > 0) {
       const discGrid = document.createElement("div");
-      discGrid.className = "products-grid";
-      discGrid.style.cssText = "grid-column:1/-1;";
+      discGrid.className = "grid-products";
+      discGrid.style.cssText = "grid-column:1/-1; margin-top:24px;";
       discGrid.innerHTML = discountedProducts.map(p => productCardHTML(p, [])).join("");
       el.appendChild(discGrid);
       bindProductCardEvents(discGrid);
@@ -716,8 +716,8 @@
 
     // عرض المنتجات المخفّضة بنفس بطاقة المتجر
     const discountedContainer = document.createElement("div");
-    discountedContainer.className = "products-grid";
-    discountedContainer.style.cssText = "grid-column:1/-1;";
+    discountedContainer.className = "grid-products";
+    discountedContainer.style.cssText = "grid-column:1/-1; margin-top:24px;";
     discountedContainer.innerHTML = discountedProducts.map(p => productCardHTML(p, [])).join("");
 
     grid.innerHTML = offersHTML;
