@@ -435,21 +435,15 @@
       el.closest("section").style.display = "none";
       return;
     }
-    const discountedHTML = discountedProducts.map(p => {
-      const name = lang === "ar" ? p.name_ar : p.name_fr;
-      return `
-        <div class="offer-card" style="background:var(--white);border:1.5px solid var(--silver-200);border-radius:var(--radius-lg);padding:20px;">
-          ${p.img ? `<img src="${p.img}" alt="${name}" style="width:100%;height:160px;object-fit:cover;border-radius:var(--radius-md);margin-bottom:12px;">` : ""}
-          <div style="font-size:12px;color:var(--ink-faint);font-weight:700;">${p.brand}</div>
-          <div style="font-size:15px;font-weight:800;margin:4px 0 8px;">${name}</div>
-          <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
-            <span style="font-size:20px;font-weight:900;color:var(--gold);">${fmt(p.price)} <small>${currency()}</small></span>
-            <span style="font-size:13px;color:var(--ink-faint);text-decoration:line-through;">${fmt(p.oldPrice)}</span>
-          </div>
-          <button class="btn btn-primary btn-sm" data-offer-product="${p.id}" ${p.stock <= 0 ? "disabled" : ""}>${p.stock <= 0 ? (lang === "ar" ? "غير متوفر" : "Rupture") : (lang === "ar" ? "+ أضف للسلة" : "+ Ajouter")}</button>
-        </div>`;
-    }).join("");
-    el.innerHTML = activeOffers.map((o) => offerCardHTML(o)).join("") + discountedHTML;
+    el.innerHTML = activeOffers.map((o) => offerCardHTML(o)).join("");
+    if (discountedProducts.length > 0) {
+      const discGrid = document.createElement("div");
+      discGrid.className = "products-grid";
+      discGrid.style.cssText = "grid-column:1/-1;";
+      discGrid.innerHTML = discountedProducts.map(p => productCardHTML(p, [])).join("");
+      el.appendChild(discGrid);
+      bindProductCardEvents(discGrid);
+    }
 
     // ربط أزرار "أضف للسلة" للباقات
     el.querySelectorAll("[data-bundle-offer]").forEach((btn) => {
@@ -720,29 +714,17 @@
     // عرض العروض العادية
     const offersHTML = activeOffers.map((o) => offerCardHTML(o)).join("");
 
-    // عرض المنتجات المخفّضة
-    const discountedHTML = discountedProducts.map(p => {
-      const name = lang === "ar" ? p.name_ar : p.name_fr;
-      const hasVariants = Array.isArray(p.variants) && p.variants.length > 0;
-      return `
-        <div class="offer-card" style="background:var(--white);border:1.5px solid var(--silver-200);border-radius:var(--radius-lg);padding:24px;display:flex;flex-direction:column;gap:12px;">
-          ${p.img ? `<img src="${p.img}" alt="${name}" style="width:100%;height:220px;object-fit:contain;border-radius:var(--radius-md);background:#f8f9fa;">` : ""}
-          <div>
-            <div style="font-size:13px;color:var(--ink-faint);font-weight:700;margin-bottom:4px;">${p.brand}</div>
-            <div style="font-size:16px;font-weight:800;color:var(--ink);margin-bottom:8px;">${name}</div>
-            <div style="display:flex;align-items:center;gap:12px;">
-              <span style="font-size:22px;font-weight:900;color:var(--gold);">${fmt(p.price)} <small style="font-size:14px;">${currency()}</small></span>
-              <span style="font-size:15px;color:var(--ink-faint);text-decoration:line-through;">${fmt(p.oldPrice)} ${currency()}</span>
-            </div>
-          </div>
-          ${hasVariants
-            ? `<button class="btn btn-primary" onclick="window.location.href='product.html?id=${p.id}'">${lang === "ar" ? "اختر الذوق" : "Choisir le goût"}</button>`
-            : `<button class="btn btn-primary" data-discounted-product="${p.id}" ${p.stock <= 0 ? "disabled" : ""}>${p.stock <= 0 ? (lang === "ar" ? "غير متوفر" : "Rupture de stock") : (lang === "ar" ? "+ أضف للسلة" : "+ Ajouter au panier")}</button>`
-          }
-        </div>`;
-    }).join("");
+    // عرض المنتجات المخفّضة بنفس بطاقة المتجر
+    const discountedContainer = document.createElement("div");
+    discountedContainer.className = "products-grid";
+    discountedContainer.style.cssText = "grid-column:1/-1;";
+    discountedContainer.innerHTML = discountedProducts.map(p => productCardHTML(p, [])).join("");
 
-    grid.innerHTML = offersHTML + discountedHTML;
+    grid.innerHTML = offersHTML;
+    if (discountedProducts.length > 0) {
+      grid.appendChild(discountedContainer);
+      bindProductCardEvents(discountedContainer);
+    }
 
     grid.querySelectorAll("[data-bundle-offer]").forEach((btn) => {
       btn.addEventListener("click", () => {
