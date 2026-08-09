@@ -726,7 +726,7 @@
       const hasVariants = Array.isArray(p.variants) && p.variants.length > 0;
       return `
         <div class="offer-card" style="background:var(--white);border:1.5px solid var(--silver-200);border-radius:var(--radius-lg);padding:24px;display:flex;flex-direction:column;gap:12px;">
-          ${p.img ? `<img src="${p.img}" alt="${name}" style="width:100%;height:180px;object-fit:cover;border-radius:var(--radius-md);">` : ""}
+          ${p.img ? `<img src="${p.img}" alt="${name}" style="width:100%;height:220px;object-fit:contain;border-radius:var(--radius-md);background:#f8f9fa;">` : ""}
           <div>
             <div style="font-size:13px;color:var(--ink-faint);font-weight:700;margin-bottom:4px;">${p.brand}</div>
             <div style="font-size:16px;font-weight:800;color:var(--ink);margin-bottom:8px;">${name}</div>
@@ -737,7 +737,7 @@
           </div>
           ${hasVariants
             ? `<button class="btn btn-primary" onclick="window.location.href='product.html?id=${p.id}'">${lang === "ar" ? "اختر الذوق" : "Choisir le goût"}</button>`
-            : `<button class="btn btn-primary" data-offer-product="${p.id}" ${p.stock <= 0 ? "disabled" : ""}>${p.stock <= 0 ? (lang === "ar" ? "غير متوفر" : "Rupture de stock") : (lang === "ar" ? "أضف للسلة" : "Ajouter au panier")}</button>`
+            : `<button class="btn btn-primary" data-discounted-product="${p.id}" ${p.stock <= 0 ? "disabled" : ""}>${p.stock <= 0 ? (lang === "ar" ? "غير متوفر" : "Rupture de stock") : (lang === "ar" ? "+ أضف للسلة" : "+ Ajouter au panier")}</button>`
           }
         </div>`;
     }).join("");
@@ -753,6 +753,9 @@
     });
     grid.querySelectorAll("[data-offer-product]").forEach((btn) => {
       btn.addEventListener("click", () => addToCart(btn.getAttribute("data-offer-product"), 1));
+    });
+    grid.querySelectorAll("[data-discounted-product]").forEach((btn) => {
+      btn.addEventListener("click", () => addToCart(btn.getAttribute("data-discounted-product"), 1));
     });
   }
 
