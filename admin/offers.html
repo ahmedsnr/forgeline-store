@@ -126,16 +126,27 @@
       <div id="regularFields">
         <div class="field">
           <label>المنتج المرتبط بالعرض <span class="req">*</span></label>
-          <select id="fProductId">
+          <select id="fProductId" onchange="previewSelectedProduct(this.value)">
             <option value="">اختر منتجاً...</option>
           </select>
+          <div id="productPreview" style="display:none;margin-top:10px;padding:10px;background:var(--navy-50);border-radius:10px;display:none;align-items:center;gap:12px;">
+            <img id="productPreviewImg" src="" alt="" style="width:60px;height:60px;object-fit:cover;border-radius:8px;flex-shrink:0;">
+            <div>
+              <div id="productPreviewName" style="font-weight:700;font-size:14px;"></div>
+              <div id="productPreviewPrice" style="font-size:13px;color:var(--ink-faint);margin-top:2px;"></div>
+            </div>
+          </div>
         </div>
         <div class="field-row">
           <div class="field">
-            <label>نسبة الخصم % <span class="req">*</span></label>
-            <input type="number" id="fDiscount" min="1" max="99" placeholder="مثال: 15">
+            <label>السعر بعد الخصم (د.ج) <span class="req">*</span></label>
+            <input type="number" id="fDiscount" min="0" placeholder="مثال: 4500">
           </div>
-          <div class="field"></div>
+          <div class="field">
+            <div id="regularSavings" style="padding:12px;background:var(--navy-50);border-radius:10px;font-size:13px;color:var(--ink-faint);margin-top:28px;">
+              أدخل السعر لحساب التوفير
+            </div>
+          </div>
         </div>
       </div>
 
@@ -166,11 +177,11 @@
       <!-- التواريخ (مشتركة) -->
       <div class="field-row">
         <div class="field">
-          <label>تاريخ البداية <span class="req">*</span></label>
+          <label>تاريخ البداية (اختياري)</label>
           <input type="date" id="fStart">
         </div>
         <div class="field">
-          <label>تاريخ النهاية <span class="req">*</span></label>
+          <label>تاريخ النهاية (اختياري)</label>
           <input type="date" id="fEnd">
         </div>
       </div>
@@ -180,7 +191,7 @@
         <label>صورة العرض/الباقة (البانر)</label>
         <input type="file" id="fOfferImageFile" accept="image/*">
         <p class="text-faint" style="font-size:11.5px; margin-top:6px;">اختياري — لو فارغة هتستخدم صورة المنتج أو الصورة الافتراضية</p>
-        <div id="offerImagePreview" style="width:100%;max-width:360px;height:130px;border-radius:10px;overflow:hidden;background:var(--navy-50);margin-top:10px;border:1px solid var(--silver-200);"></div>
+        <div id="offerImagePreview" style="width:100%;max-width:500px;height:220px;border-radius:10px;overflow:hidden;background:var(--navy-50);margin-top:10px;border:1px solid var(--silver-200);"></div>
         <input type="hidden" id="fOfferImageCurrentUrl">
       </div>
 
@@ -205,5 +216,51 @@
 <script src="../js/data.js"></script>
 <script src="../js/admin.js"></script>
 <script src="../js/admin-offers.js"></script>
+<script>
+function previewSelectedProduct(productId) {
+  const preview = document.getElementById("productPreview");
+  const img = document.getElementById("productPreviewImg");
+  const name = document.getElementById("productPreviewName");
+  const price = document.getElementById("productPreviewPrice");
+  const discountInput = document.getElementById("fDiscount");
+
+  if (!productId || !window._offersProductsCache) {
+    if (preview) preview.style.display = "none";
+    return;
+  }
+
+  const product = window._offersProductsCache.find(p => p.id === productId);
+  if (!product) return;
+
+  img.src = product.img || "";
+  name.textContent = product.name_ar || product.name_fr || "";
+  price.textContent = "السعر الأصلي: " + Number(product.price).toLocaleString("en-US") + " د.ج";
+  preview.style.display = "flex";
+
+  // نملأ السعر بعد الخصم تلقائياً بالسعر الأصلي
+  if (discountInput && !discountInput.value) {
+    discountInput.value = product.price;
+  }
+
+  // عند تغيير السعر نحسب التوفير
+  discountInput.oninput = () => {
+    const newPrice = Number(discountInput.value);
+    const savings = product.price - newPrice;
+    const savingsEl = document.getElementById("regularSavings");
+    if (savingsEl) {
+      if (savings > 0) {
+        savingsEl.innerHTML = `✅ التوفير: <strong>${savings.toLocaleString("en-US")} د.ج</strong>`;
+        savingsEl.style.color = "var(--success)";
+      } else if (savings < 0) {
+        savingsEl.innerHTML = `⚠️ السعر أعلى من الأصلي!`;
+        savingsEl.style.color = "var(--danger)";
+      } else {
+        savingsEl.innerHTML = "لا يوجد خصم";
+        savingsEl.style.color = "var(--ink-faint)";
+      }
+    }
+  };
+}
+</script>
 </body>
 </html>
