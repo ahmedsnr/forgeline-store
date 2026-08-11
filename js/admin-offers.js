@@ -119,10 +119,12 @@
     const sel = document.getElementById("fProductId");
     if (!sel) return;
     const currentVal = sel.value;
+    window._offersProductsCache = productsCache; // نخزن للـ preview
     while (sel.options.length > 1) sel.remove(1);
     productsCache.forEach((p) => {
       const opt = document.createElement("option");
-      opt.value = p.id; opt.textContent = p.name_ar;
+      opt.value = p.id;
+      opt.textContent = `${p.brand ? p.brand + " — " : ""}${p.name_ar} (${Number(p.price).toLocaleString("en-US")} د.ج)`;
       sel.appendChild(opt);
     });
     if (currentVal) sel.value = currentVal;
@@ -334,7 +336,7 @@
     if (!isBundle) {
       if (!document.getElementById("fProductId").value) return showFormError("الرجاء اختيار المنتج");
       const disc = Number(document.getElementById("fDiscount").value);
-      if (!disc || disc < 1 || disc > 99) return showFormError("الرجاء إدخال نسبة خصم صحيحة (1-99%)");
+      if (!disc || disc < 0) return showFormError("الرجاء إدخال سعر الخصم");
     } else {
       const validItems = bundleItems.filter((b) => b.productId);
       if (validItems.length < 2) return showFormError("الباقة لازم تحتوي على منتجين أو أكثر");
@@ -361,7 +363,15 @@
 
       if (!isBundle) {
         offerData.productId = document.getElementById("fProductId").value;
-        offerData.discount = Number(document.getElementById("fDiscount").value);
+        const discountedPrice = Number(document.getElementById("fDiscount").value);
+        offerData.discountedPrice = discountedPrice; // السعر بعد الخصم
+        // نحسب النسبة من السعر الأصلي للمنتج
+        const prod = window._offersProductsCache?.find(p => p.id === offerData.productId);
+        if (prod && prod.price > discountedPrice) {
+          offerData.discount = Math.round((1 - discountedPrice / prod.price) * 100);
+        } else {
+          offerData.discount = 0;
+        }
       } else {
         offerData.bundleProducts = bundleItems.filter((b) => b.productId).map((b) => ({ productId: b.productId, qty: b.qty || 1 }));
         offerData.bundlePrice = Number(document.getElementById("fBundlePrice").value);
