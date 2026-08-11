@@ -25,6 +25,15 @@
     setupAdminLogout();
     setupStatusFilter();
     listenToOrders();
+
+    // ربط خانة البحث برقم الهاتف
+    const phoneInput = document.getElementById("phoneSearchInput");
+    if (phoneInput) {
+      phoneInput.addEventListener("input", () => {
+        phoneSearch = phoneInput.value;
+        renderList();
+      });
+    }
   });
 
   function fmt(n) { return Number(n || 0).toLocaleString("en-US"); }
@@ -88,17 +97,15 @@
     let orders = currentFilter === "all" ? allOrdersCache : allOrdersCache.filter((o) => o.status === currentFilter);
     // فلتر رقم الهاتف
     if (phoneSearch.trim()) {
-      // debug: نطبع شكل الطلب الأول عشان نرى أين الهاتف
-      if (allOrdersCache.length > 0) console.log("Order structure:", JSON.stringify(allOrdersCache[0]).slice(0, 300));
       const search = phoneSearch.trim().replace(/\s/g, "").replace(/-/g, "");
       orders = orders.filter((o) => {
-        // نبحث في كل الأماكن الممكنة
         const phones = [
           o.customer?.phone || "",
+          o.customer?.tel || "",
           o.phone || "",
           o.tel || "",
           o.telephone || "",
-        ].map(p => p.toString().replace(/\s/g, "").replace(/-/g, ""));
+        ].map(p => String(p).replace(/\s/g, "").replace(/-/g, ""));
         return phones.some(p => p.includes(search));
       });
     }
