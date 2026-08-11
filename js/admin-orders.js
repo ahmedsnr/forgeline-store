@@ -31,7 +31,7 @@
     if (phoneInput) {
       phoneInput.addEventListener("input", () => {
         phoneSearch = phoneInput.value;
-        renderList();
+        render();
       });
     }
   });
