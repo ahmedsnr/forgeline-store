@@ -469,13 +469,10 @@
     const defaultImg = (settingsCache && settingsCache.offerBannerImage) || "";
 
     if (isBundle) {
-      // حساب السعر الأصلي الإجمالي للباقة
       const originalTotal = (o.bundleProducts || []).reduce((sum, item) => {
         const prod = productsCache.find((p) => p.id === item.productId);
         return sum + (prod ? prod.price * (item.qty || 1) : 0);
       }, 0);
-      const savings = originalTotal > 0 ? originalTotal - o.bundlePrice : 0;
-      const savingsPct = originalTotal > 0 ? Math.round((savings / originalTotal) * 100) : 0;
       const imgUrl = o.img || defaultImg;
       const productNames = (o.bundleProducts || [])
         .map((item) => {
@@ -489,15 +486,13 @@
       <div class="offer-card offer-card-bundle">
         <img src="${imgUrl}" alt="">
         <div class="offer-content">
-          <span class="offer-discount">${savings > 0 ? `-${savingsPct}%` : (lang === "fr" ? "Pack" : "باقة")}</span>
-          <span class="bundle-badge">${lang === "fr" ? "Pack" : lang === "fr" ? "Pack" : "باقة تجميعية"}</span>
+          <span class="bundle-badge">${lang === "fr" ? "Pack" : "باقة تجميعية"}</span>
           <h3>${lang === "ar" ? o.title_ar : o.title_fr}</h3>
           <p class="bundle-products-line">${productNames}</p>
           <div class="bundle-price-row">
             <span class="bundle-price">${fmt(o.bundlePrice)} ${currency()}</span>
             ${originalTotal > 0 ? `<span class="bundle-original">${fmt(originalTotal)}</span>` : ""}
           </div>
-          <div class="offer-end">${t("offer_ends")} ${new Date(o.end).toLocaleDateString()}</div>
           <button class="btn btn-primary btn-sm" data-bundle-offer="${o.id}" style="margin-top:12px;width:100%;">
             + ${lang === "ar" ? "أضف الباقة للسلة" : "Ajouter le pack au panier"}
           </button>
@@ -508,14 +503,17 @@
     // عرض عادي
     const prod = productsCache.find((p) => p.id === o.productId);
     if (!prod) return "";
+    const discountedPrice = o.discountedPrice || Math.round(prod.price * (1 - o.discount / 100));
     return `
     <div class="offer-card">
       <img src="${o.img || prod.img || defaultImg}" alt="">
       <div class="offer-content">
-        <span class="offer-discount">-${o.discount}%</span>
         <h3>${lang === "ar" ? o.title_ar : o.title_fr}</h3>
         <p>${lang === "ar" ? prod.name_ar : prod.name_fr}</p>
-        <div class="offer-end">${t("offer_ends")} ${new Date(o.end).toLocaleDateString()}</div>
+        <div class="bundle-price-row">
+          <span class="bundle-price">${fmt(discountedPrice)} ${currency()}</span>
+          <span class="bundle-original">${fmt(prod.price)}</span>
+        </div>
         <button class="btn btn-primary btn-sm" data-offer-product="${prod.id}" style="margin-top:12px;width:100%;">
           + ${lang === "ar" ? "أضف للسلة" : "Ajouter au panier"}
         </button>
