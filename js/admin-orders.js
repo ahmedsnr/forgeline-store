@@ -25,6 +25,7 @@
     setupAdminLogout();
     setupStatusFilter();
     listenToOrders();
+    cleanupOldOrders(); // حذف الطلبات القديمة تلقائياً
 
     // ربط خانة البحث برقم الهاتف
     const phoneInput = document.getElementById("phoneSearchInput");
@@ -35,6 +36,28 @@
       });
     }
   });
+
+  async function cleanupOldOrders() {
+    try {
+      const cutoff = new Date();
+      cutoff.setDate(cutoff.getDate() - 50); // 50 يوم
+      const cutoffISO = cutoff.toISOString();
+
+      const snapshot = await db.collection("orders")
+        .where("date", "<", cutoffISO)
+        .get();
+
+      if (snapshot.empty) return;
+
+      const batch = db.batch();
+      snapshot.docs.forEach(doc => batch.delete(doc.ref));
+      await batch.commit();
+
+      console.log(`Auto-deleted ${snapshot.docs.length} orders older than 50 days`);
+    } catch (e) {
+      console.error("cleanupOldOrders:", e);
+    }
+  }
 
   function fmt(n) { return Number(n || 0).toLocaleString("en-US"); }
 
