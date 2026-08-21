@@ -5,7 +5,8 @@
 (function () {
   "use strict";
 
-  let editingId = null; // null = إضافة جديد، أو id المنتج اللي بنعدّله
+  let editingId = null;
+  let productSearch = ""; // null = إضافة جديد، أو id المنتج اللي بنعدّله
   let productsCache = [];
   let selectedImageFile = null;
   let selectedExtraImageFiles = [];
@@ -20,6 +21,15 @@
     setupVariants();
     loadCategoriesIntoSelect();
     listenToProducts();
+
+    // ربط خانة البحث
+    const searchInput = document.getElementById("productSearchInput");
+    if (searchInput) {
+      searchInput.addEventListener("input", () => {
+        productSearch = searchInput.value;
+        renderList();
+      });
+    }
 
     // listener لتغيير الفئة الرئيسية → تحميل الفئات الفرعية
     const catSel = document.getElementById("fCategory");
@@ -170,7 +180,16 @@
      RENDER PRODUCTS LIST
      ---------------------------------------------------------------------- */
   function renderList() {
-    const products = productsCache;
+    // فلتر البحث
+    let products = productsCache;
+    if (productSearch.trim()) {
+      const q = productSearch.trim().toLowerCase();
+      products = products.filter(p =>
+        (p.name_ar || "").toLowerCase().includes(q) ||
+        (p.name_fr || "").toLowerCase().includes(q) ||
+        (p.brand || "").toLowerCase().includes(q)
+      );
+    }
     const container = document.getElementById("productsList");
     const emptyNote = document.getElementById("productsEmptyNote");
     document.getElementById("productsCount").textContent = `${products.length} منتج`;
