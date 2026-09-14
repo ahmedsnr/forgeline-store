@@ -39,17 +39,6 @@
   function applySettings() {
     if (!settingsCache) return;
 
-    // شريط الإعلان
-    if (bar) {
-      if (settingsCache.announceEnabled === false) {
-        bar.style.display = "none";
-      } else {
-        bar.style.display = "";
-        const text = lang === "ar" ? settingsCache.announceText_ar : settingsCache.announceText_fr;
-        if (text) bar.textContent = text;
-      }
-    }
-
     // صورة الـ Hero (موجودة فقط في الصفحة الرئيسية)
     const heroImg = document.getElementById("heroImage");
     if (heroImg && settingsCache.heroImage) {
