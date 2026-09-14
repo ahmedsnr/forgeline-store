@@ -40,7 +40,6 @@
     if (!settingsCache) return;
 
     // شريط الإعلان
-    const bar = document.querySelector(".announce-bar");
     if (bar) {
       if (settingsCache.announceEnabled === false) {
         bar.style.display = "none";
