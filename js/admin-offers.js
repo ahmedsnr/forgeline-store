@@ -11,6 +11,11 @@
   let selectedImageFile = null;
   let bundleItems = []; // [{productId, qty}]
 
+  /* ── Product Picker state ── */
+  let pickerSelectedId = null;
+  let pickerActiveCat  = "الكل";
+  let pickerQuery      = "";
+
   document.addEventListener("DOMContentLoaded", () => {
     AdminAuth.requireLogin();
     setupAdminLogout();
@@ -18,6 +23,7 @@
     setupFormActions();
     setupImageInput();
     setupOfferTypeToggle();
+    setupProductPicker();
     listenToOffers();
     loadProducts();
   });
@@ -34,7 +40,9 @@
     try {
       const snap = await db.collection("products").get();
       productsCache = snap.docs.map((d) => d.data());
-      populateProductSelect();
+      window._offersProductsCache = productsCache;
+      renderPickerCats();
+      renderPickerList();
     } catch (e) { console.error(e); }
   }
 
@@ -114,20 +122,180 @@
   function fmtAdmin(n) { return Number(n || 0).toLocaleString("en-US"); }
   function escapeHTML(str) { const d = document.createElement("div"); d.textContent = String(str == null ? "" : str); return d.innerHTML; }
 
-  /* ---------------------------------------------------------------------- */
-  function populateProductSelect() {
-    const sel = document.getElementById("fProductId");
-    if (!sel) return;
-    const currentVal = sel.value;
-    window._offersProductsCache = productsCache; // نخزن للـ preview
-    while (sel.options.length > 1) sel.remove(1);
-    productsCache.forEach((p) => {
-      const opt = document.createElement("option");
-      opt.value = p.id;
-      opt.textContent = `${p.brand ? p.brand + " — " : ""}${p.name_ar} (${Number(p.price).toLocaleString("en-US")} د.ج)`;
-      sel.appendChild(opt);
+  /* ======================================================================
+     PRODUCT PICKER
+     ====================================================================== */
+  function setupProductPicker() {
+    const trigger  = document.getElementById("productPickerTrigger");
+    const dropdown = document.getElementById("productPickerDropdown");
+    const search   = document.getElementById("pickerSearch");
+
+    if (!trigger) return;
+
+    trigger.addEventListener("click", () => {
+      const isOpen = dropdown.classList.contains("open");
+      if (isOpen) { closePicker(); } else { openPicker(); }
     });
-    if (currentVal) sel.value = currentVal;
+
+    // إغلاق عند النقر خارج الـ picker
+    document.addEventListener("click", (e) => {
+      if (!document.getElementById("productPickerWrap")?.contains(e.target)) {
+        closePicker();
+      }
+    });
+
+    search.addEventListener("input", () => {
+      pickerQuery = search.value.trim();
+      renderPickerList();
+    });
+  }
+
+  function openPicker() {
+    document.getElementById("productPickerTrigger").classList.add("open");
+    document.getElementById("productPickerDropdown").classList.add("open");
+    document.getElementById("pickerSearch").focus();
+  }
+
+  function closePicker() {
+    document.getElementById("productPickerTrigger")?.classList.remove("open");
+    document.getElementById("productPickerDropdown")?.classList.remove("open");
+  }
+
+  function renderPickerCats() {
+    const catsEl = document.getElementById("pickerCats");
+    if (!catsEl) return;
+
+    // استخرج الفئات الفريدة من المنتجات
+    const cats = ["الكل", ...new Set(productsCache.map(p => p.category || p.cat || "").filter(Boolean))];
+
+    catsEl.innerHTML = cats.map(cat => `
+      <button type="button" class="picker-cat-btn ${cat === pickerActiveCat ? "active" : ""}" data-cat="${escapeHTML(cat)}">
+        ${escapeHTML(cat)}
+      </button>
+    `).join("");
+
+    catsEl.querySelectorAll(".picker-cat-btn").forEach(btn => {
+      btn.addEventListener("click", () => {
+        pickerActiveCat = btn.getAttribute("data-cat");
+        renderPickerCats();
+        renderPickerList();
+      });
+    });
+  }
+
+  function renderPickerList() {
+    const listEl = document.getElementById("pickerList");
+    if (!listEl) return;
+
+    let filtered = productsCache;
+
+    // فلتر الفئة
+    if (pickerActiveCat !== "الكل") {
+      filtered = filtered.filter(p => (p.category || p.cat || "") === pickerActiveCat);
+    }
+
+    // فلتر البحث
+    if (pickerQuery) {
+      const q = pickerQuery.toLowerCase();
+      filtered = filtered.filter(p =>
+        (p.name_ar || "").toLowerCase().includes(q) ||
+        (p.name_fr || "").toLowerCase().includes(q) ||
+        (p.brand  || "").toLowerCase().includes(q)
+      );
+    }
+
+    if (filtered.length === 0) {
+      listEl.innerHTML = `<div class="picker-empty">لا توجد منتجات مطابقة</div>`;
+      return;
+    }
+
+    listEl.innerHTML = filtered.map(p => `
+      <div class="picker-item ${p.id === pickerSelectedId ? "selected" : ""}" data-pid="${p.id}">
+        <img src="${escapeHTML(p.img || "")}" alt="" onerror="this.style.display='none'">
+        <div class="picker-item-info">
+          <div class="picker-item-name">${escapeHTML(p.name_ar || p.name_fr || "")}</div>
+          <div class="picker-item-brand">${escapeHTML(p.brand || "")}</div>
+          <div class="picker-item-price">${Number(p.price).toLocaleString("en-US")} ${CURRENCY}</div>
+        </div>
+        ${p.id === pickerSelectedId ? `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--navy-950)" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>` : ""}
+      </div>
+    `).join("");
+
+    listEl.querySelectorAll(".picker-item").forEach(item => {
+      item.addEventListener("click", () => {
+        selectProduct(item.getAttribute("data-pid"));
+        closePicker();
+      });
+    });
+  }
+
+  function selectProduct(productId) {
+    pickerSelectedId = productId;
+    document.getElementById("fProductId").value = productId;
+
+    const product = productsCache.find(p => p.id === productId);
+    if (!product) return;
+
+    // تحديث الزر
+    const trigger = document.getElementById("productPickerTrigger");
+    trigger.innerHTML = `
+      <img src="${escapeHTML(product.img || "")}" alt="" onerror="this.style.display='none'" style="width:36px;height:36px;border-radius:7px;object-fit:cover;flex-shrink:0;">
+      <span style="font-weight:700;">${escapeHTML(product.name_ar || product.name_fr || "")}</span>
+      <svg class="picker-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+    `;
+
+    // معاينة المنتج
+    const preview    = document.getElementById("productPreview");
+    const img        = document.getElementById("productPreviewImg");
+    const nameEl     = document.getElementById("productPreviewName");
+    const priceEl    = document.getElementById("productPreviewPrice");
+    const discInput  = document.getElementById("fDiscount");
+
+    img.src       = product.img || "";
+    nameEl.textContent  = product.name_ar || product.name_fr || "";
+    priceEl.textContent = "السعر الأصلي: " + Number(product.price).toLocaleString("en-US") + " د.ج";
+    preview.style.display = "flex";
+
+    if (discInput && !discInput.value) discInput.value = product.price;
+
+    discInput.oninput = () => {
+      const newPrice = Number(discInput.value);
+      const savings  = product.price - newPrice;
+      const savingsEl = document.getElementById("regularSavings");
+      if (savingsEl) {
+        if (savings > 0) {
+          savingsEl.innerHTML = `✅ التوفير: <strong>${savings.toLocaleString("en-US")} د.ج</strong>`;
+          savingsEl.style.color = "var(--success)";
+        } else if (savings < 0) {
+          savingsEl.innerHTML = `⚠️ السعر أعلى من الأصلي!`;
+          savingsEl.style.color = "var(--danger)";
+        } else {
+          savingsEl.innerHTML = "لا يوجد خصم";
+          savingsEl.style.color = "var(--ink-faint)";
+        }
+      }
+    };
+
+    renderPickerList(); // تحديث العلامة ✓ في القائمة
+  }
+
+  function resetPicker() {
+    pickerSelectedId = null;
+    pickerActiveCat  = "الكل";
+    pickerQuery      = "";
+    document.getElementById("fProductId").value = "";
+    const trigger = document.getElementById("productPickerTrigger");
+    if (trigger) {
+      trigger.innerHTML = `
+        <span class="picker-placeholder" id="pickerLabel">اختر منتجاً...</span>
+        <svg class="picker-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+      `;
+    }
+    const search = document.getElementById("pickerSearch");
+    if (search) search.value = "";
+    document.getElementById("productPreview").style.display = "none";
+    renderPickerCats();
+    renderPickerList();
   }
 
   /* ---------------------------------------------------------------------- */
@@ -142,7 +310,6 @@
       });
     });
 
-    // Bundle price → حساب التوفير
     document.getElementById("fBundlePrice")?.addEventListener("input", updateBundleSavings);
   }
 
@@ -175,7 +342,7 @@
       const prod = productsCache.find((p) => p.id === item.productId);
       return `
       <div style="display:flex;align-items:center;gap:10px;padding:10px;background:var(--navy-50);border-radius:10px;">
-        ${prod ? `<img src="${prod.img}" alt="" style="width:40px;height:40px;object-fit:cover;border-radius:7px;flex-shrink:0;">` : ""}
+        ${prod ? `<img src="${prod.img}" alt="" style="width:40px;height:40px;object-fit:cover;border-radius:7px;flex-shrink:0;">` : `<div style="width:40px;height:40px;background:var(--silver-100);border-radius:7px;flex-shrink:0;"></div>`}
         <select data-bundle-product="${i}" style="flex:1;padding:8px 10px;border:1.5px solid var(--silver-200);border-radius:8px;font-size:13px;">
           <option value="">اختر منتجاً...</option>
           ${productsCache.map((p) => `<option value="${p.id}" ${p.id === item.productId ? "selected" : ""}>${p.name_ar}</option>`).join("")}
@@ -281,7 +448,8 @@
       ? `<img src="${o.img}" alt="" style="width:100%;height:100%;object-fit:cover;">` : "";
 
     if (!isBundle) {
-      document.getElementById("fProductId").value = o.productId || "";
+      // تحديد المنتج في الـ picker
+      if (o.productId) selectProduct(o.productId);
       document.getElementById("fDiscount").value = o.discount || "";
     } else {
       bundleItems = (o.bundleProducts || []).map((b) => ({ productId: b.productId, qty: b.qty || 1 }));
@@ -305,6 +473,7 @@
     bundleItems = [];
     renderBundleItems();
     selectedImageFile = null;
+    resetPicker();
     hideFormError();
   }
 
@@ -364,8 +533,7 @@
       if (!isBundle) {
         offerData.productId = document.getElementById("fProductId").value;
         const discountedPrice = Number(document.getElementById("fDiscount").value);
-        offerData.discountedPrice = discountedPrice; // السعر بعد الخصم
-        // نحسب النسبة من السعر الأصلي للمنتج
+        offerData.discountedPrice = discountedPrice;
         const prod = window._offersProductsCache?.find(p => p.id === offerData.productId);
         if (prod && prod.price > discountedPrice) {
           offerData.discount = Math.round((1 - discountedPrice / prod.price) * 100);
