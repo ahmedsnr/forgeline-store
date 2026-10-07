@@ -7,6 +7,94 @@
 <meta name="robots" content="noindex, nofollow">
 <link rel="stylesheet" href="../css/style.css">
 <link rel="stylesheet" href="../css/admin.css">
+<style>
+  /* ── Product Picker ── */
+  .product-picker-wrap { position: relative; }
+
+  .product-picker-trigger {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 14px; border: 1.5px solid var(--silver-200);
+    border-radius: 10px; cursor: pointer; background: var(--bg);
+    font-size: 13.5px; font-weight: 600; color: var(--ink);
+    transition: border-color .15s;
+  }
+  .product-picker-trigger:hover { border-color: var(--navy-400); }
+  .product-picker-trigger img {
+    width: 36px; height: 36px; border-radius: 7px;
+    object-fit: cover; flex-shrink: 0;
+  }
+  .product-picker-trigger .picker-placeholder { color: var(--ink-faint); font-weight: 400; }
+  .product-picker-trigger .picker-arrow {
+    margin-right: auto; margin-left: 0;
+    transition: transform .2s;
+  }
+  .product-picker-trigger.open .picker-arrow { transform: rotate(180deg); }
+
+  .product-picker-dropdown {
+    display: none; position: absolute; top: calc(100% + 6px);
+    right: 0; left: 0; z-index: 200;
+    background: var(--bg); border: 1.5px solid var(--silver-200);
+    border-radius: 12px; box-shadow: 0 8px 32px rgba(0,0,0,.15);
+    overflow: hidden;
+  }
+  .product-picker-dropdown.open { display: block; }
+
+  .picker-search-row {
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--silver-100);
+    display: flex; gap: 8px; align-items: center;
+  }
+  .picker-search-row input {
+    flex: 1; border: 1.5px solid var(--silver-200);
+    border-radius: 8px; padding: 7px 10px;
+    font-size: 13px; background: var(--navy-50);
+  }
+
+  .picker-cats {
+    display: flex; gap: 6px; padding: 10px 12px;
+    border-bottom: 1px solid var(--silver-100);
+    overflow-x: auto; flex-wrap: wrap;
+  }
+  .picker-cat-btn {
+    padding: 5px 12px; border-radius: 20px; font-size: 12px;
+    font-weight: 700; border: 1.5px solid var(--silver-200);
+    background: var(--bg); cursor: pointer; white-space: nowrap;
+    transition: all .15s;
+  }
+  .picker-cat-btn.active {
+    background: var(--navy-950); color: #fff;
+    border-color: var(--navy-950);
+  }
+
+  .picker-list {
+    max-height: 260px; overflow-y: auto;
+    padding: 6px 0;
+  }
+  .picker-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 9px 14px; cursor: pointer;
+    transition: background .12s;
+  }
+  .picker-item:hover { background: var(--navy-50); }
+  .picker-item.selected { background: var(--navy-50); }
+  .picker-item img {
+    width: 42px; height: 42px; border-radius: 8px;
+    object-fit: cover; flex-shrink: 0;
+    border: 1px solid var(--silver-100);
+  }
+  .picker-item-info { flex: 1; min-width: 0; }
+  .picker-item-name { font-size: 13.5px; font-weight: 700; }
+  .picker-item-brand { font-size: 11.5px; color: var(--ink-faint); margin-top: 1px; }
+  .picker-item-price { font-size: 12px; font-weight: 800; color: var(--navy-600); margin-top: 2px; }
+  .picker-empty { padding: 20px; text-align: center; color: var(--ink-faint); font-size: 13px; }
+
+  /* bundle picker list items */
+  .bundle-picker-inline {
+    border: 1.5px solid var(--silver-200); border-radius: 10px;
+    overflow: hidden; margin-bottom: 10px;
+  }
+  .bundle-picker-inline .picker-cats { flex-wrap: nowrap; }
+</style>
 </head>
 <body>
 
@@ -88,6 +176,7 @@
 
     <form class="panel admin-form-panel" id="offerForm">
       <input type="hidden" id="offerId">
+      <input type="hidden" id="fProductId">
 
       <!-- نوع العرض -->
       <div class="field" style="margin-bottom:22px;">
@@ -126,10 +215,25 @@
       <div id="regularFields">
         <div class="field">
           <label>المنتج المرتبط بالعرض <span class="req">*</span></label>
-          <select id="fProductId" onchange="previewSelectedProduct(this.value)">
-            <option value="">اختر منتجاً...</option>
-          </select>
-          <div id="productPreview" style="display:none;margin-top:10px;padding:10px;background:var(--navy-50);border-radius:10px;display:none;align-items:center;gap:12px;">
+
+          <!-- Product Picker -->
+          <div class="product-picker-wrap" id="productPickerWrap">
+            <div class="product-picker-trigger" id="productPickerTrigger">
+              <span class="picker-placeholder" id="pickerLabel">اختر منتجاً...</span>
+              <svg class="picker-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+            </div>
+            <div class="product-picker-dropdown" id="productPickerDropdown">
+              <div class="picker-search-row">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                <input type="text" id="pickerSearch" placeholder="ابحث عن منتج...">
+              </div>
+              <div class="picker-cats" id="pickerCats"></div>
+              <div class="picker-list" id="pickerList"></div>
+            </div>
+          </div>
+
+          <!-- معاينة المنتج المختار -->
+          <div id="productPreview" style="display:none; margin-top:10px; padding:10px; background:var(--navy-50); border-radius:10px; align-items:center; gap:12px;">
             <img id="productPreviewImg" src="" alt="" style="width:60px;height:60px;object-fit:cover;border-radius:8px;flex-shrink:0;">
             <div>
               <div id="productPreviewName" style="font-weight:700;font-size:14px;"></div>
@@ -137,6 +241,7 @@
             </div>
           </div>
         </div>
+
         <div class="field-row">
           <div class="field">
             <label>السعر بعد الخصم (د.ج) <span class="req">*</span></label>
@@ -217,51 +322,5 @@
 <script src="../js/data.js"></script>
 <script src="../js/admin.js"></script>
 <script src="../js/admin-offers.js"></script>
-<script>
-function previewSelectedProduct(productId) {
-  const preview = document.getElementById("productPreview");
-  const img = document.getElementById("productPreviewImg");
-  const name = document.getElementById("productPreviewName");
-  const price = document.getElementById("productPreviewPrice");
-  const discountInput = document.getElementById("fDiscount");
-
-  if (!productId || !window._offersProductsCache) {
-    if (preview) preview.style.display = "none";
-    return;
-  }
-
-  const product = window._offersProductsCache.find(p => p.id === productId);
-  if (!product) return;
-
-  img.src = product.img || "";
-  name.textContent = product.name_ar || product.name_fr || "";
-  price.textContent = "السعر الأصلي: " + Number(product.price).toLocaleString("en-US") + " د.ج";
-  preview.style.display = "flex";
-
-  // نملأ السعر بعد الخصم تلقائياً بالسعر الأصلي
-  if (discountInput && !discountInput.value) {
-    discountInput.value = product.price;
-  }
-
-  // عند تغيير السعر نحسب التوفير
-  discountInput.oninput = () => {
-    const newPrice = Number(discountInput.value);
-    const savings = product.price - newPrice;
-    const savingsEl = document.getElementById("regularSavings");
-    if (savingsEl) {
-      if (savings > 0) {
-        savingsEl.innerHTML = `✅ التوفير: <strong>${savings.toLocaleString("en-US")} د.ج</strong>`;
-        savingsEl.style.color = "var(--success)";
-      } else if (savings < 0) {
-        savingsEl.innerHTML = `⚠️ السعر أعلى من الأصلي!`;
-        savingsEl.style.color = "var(--danger)";
-      } else {
-        savingsEl.innerHTML = "لا يوجد خصم";
-        savingsEl.style.color = "var(--ink-faint)";
-      }
-    }
-  };
-}
-</script>
 </body>
 </html>
